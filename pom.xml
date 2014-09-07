@@ -9,7 +9,7 @@
         <version>9</version>
     </parent>
 
-    <groupId>net.md-5</groupId>
+    <groupId>tc.oc</groupId>
     <artifactId>bungeecord-parent</artifactId>
     <version>1.9-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -29,6 +29,16 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+    <distributionManagement>
+        <repository>
+            <id>overcast-deployment</id>
+            <url>https://repo.oc.tc/content/repositories/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>overcast-deployment</id>
+            <url>https://repo.oc.tc/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <developers>
         <developer>
