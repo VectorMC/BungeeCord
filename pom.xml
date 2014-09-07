@@ -9,7 +9,7 @@
         <version>9</version>
     </parent>
 
-    <groupId>net.md-5</groupId>
+    <groupId>tc.oc</groupId>
     <artifactId>bungeecord-parent</artifactId>
     <version>1.12-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -29,6 +29,16 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+    <distributionManagement>
+        <repository>
+            <id>overcast-deployment</id>
+            <url>https://repo.oc.tc/content/repositories/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>overcast-deployment</id>
+            <url>https://repo.oc.tc/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <developers>
         <developer>
@@ -123,6 +133,7 @@
                     </execution>
                 </executions>
             </plugin>
+<!--
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>animal-sniffer-maven-plugin</artifactId>
@@ -143,6 +154,7 @@
                     </signature>
                 </configuration>
             </plugin>
+-->
             <!-- OSS Parent 9 uses 2.7, 2.10+ is broken anyway -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
