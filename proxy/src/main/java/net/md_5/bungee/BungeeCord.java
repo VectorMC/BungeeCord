@@ -187,7 +187,9 @@ public class BungeeCord extends ProxyServer
         consoleReader.setExpandEvents( false );
 
         logger = new BungeeLogger( this );
-        System.setErr( new PrintStream( new LoggingOutputStream( logger, Level.SEVERE ), true ) );
+
+        // Overcast - stderr gets a lot of non-error output, so log it at WARNING level instead of SEVERE
+        System.setErr( new PrintStream( new LoggingOutputStream( logger, Level.WARNING ), true ) );
         System.setOut( new PrintStream( new LoggingOutputStream( logger, Level.INFO ), true ) );
 
         if ( consoleReader.getTerminal() instanceof UnsupportedTerminal )
