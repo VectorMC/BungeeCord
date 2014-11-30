@@ -127,7 +127,7 @@ public enum Protocol
         private final TIntObjectMap<TIntIntMap> packetRemap = new TIntObjectHashMap<>();
         private final TIntObjectMap<TIntIntMap> packetRemapInv = new TIntObjectHashMap<>();
 
-        
+
         {
             packetRemap.put( ProtocolConstants.MINECRAFT_1_8, new TIntIntHashMap() );
             packetRemapInv.put( ProtocolConstants.MINECRAFT_1_8, new TIntIntHashMap() );
@@ -146,7 +146,7 @@ public enum Protocol
                 }
                 id = remap.get( id );
             }
-            if ( id > MAX_PACKET_ID )
+            if ( id < 0 || id > MAX_PACKET_ID )
             {
                 throw new BadPacketException( "Packet with id " + id + " outside of range " );
             }
