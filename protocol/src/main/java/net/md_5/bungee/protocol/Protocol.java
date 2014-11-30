@@ -357,7 +357,7 @@ public enum Protocol
             {
                 throw new BadPacketException( "Unsupported protocol version" );
             }
-            if ( id > MAX_PACKET_ID )
+            if ( id < 0 || id > MAX_PACKET_ID )
             {
                 throw new BadPacketException( "Packet with id " + id + " outside of range " );
             }
