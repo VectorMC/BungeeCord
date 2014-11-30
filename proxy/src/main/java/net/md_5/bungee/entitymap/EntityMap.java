@@ -9,6 +9,7 @@ import java.io.IOException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.md_5.bungee.protocol.DefinedPacket;
+import net.md_5.bungee.protocol.Protocol;
 import net.md_5.bungee.protocol.ProtocolConstants;
 
 /**
@@ -214,13 +215,14 @@ public abstract class EntityMap
         int packetId = DefinedPacket.readVarInt( packet );
         int packetIdLength = packet.readerIndex() - readerIndex;
 
-        if(packetId>=0) {
-            if ( ints[ packetId ] )
+        if ( 0 <= packetId && packetId < Protocol.MAX_PACKET_ID)
+        {
+            if ( ints[packetId] )
             {
                 rewriteInt( packet, oldId, newId, readerIndex + packetIdLength );
-            } else if ( varints[ packetId ] )
+            } else if ( varints[packetId] )
             {
-                rewriteVarInt( packet, oldId, newId, readerIndex + packetIdLength );
+                rewriteVarInt(packet, oldId, newId, readerIndex + packetIdLength);
             }
         }
         packet.readerIndex( readerIndex );
