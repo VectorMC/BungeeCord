@@ -51,6 +51,7 @@ public class ServerConnector extends PacketHandler
     private final UserConnection user;
     private final BungeeServerInfo target;
     private State thisState = State.LOGIN_SUCCESS;
+    private final String fakeUsername;
     @Getter
     private ForgeServerHandler handshakeHandler;
     private boolean obsolete;
@@ -108,7 +109,7 @@ public class ServerConnector extends PacketHandler
         channel.write( copiedHandshake );
 
         channel.setProtocol( Protocol.LOGIN );
-        channel.write( new LoginRequest( user.getName() ) );
+        channel.write(new LoginRequest(fakeUsername != null ? fakeUsername : user.getPendingConnection().getName()));
     }
 
     @Override
