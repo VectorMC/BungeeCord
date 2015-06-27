@@ -1,5 +1,6 @@
 package net.md_5.bungee.api.chat;
 
+import com.google.common.base.Joiner;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,13 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.ToString;
 
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 public class TranslatableComponent extends BaseComponent
 {
@@ -239,5 +240,20 @@ public class TranslatableComponent extends BaseComponent
         {
             builder.append( ChatColor.MAGIC );
         }
+    }
+
+    @Override
+    protected void toString(List<String> fields, Set<BaseComponent> visited) {
+        fields.add("translate=" + translate);
+
+        if(getWith() != null && !getWith().isEmpty()) {
+            List<String> withText = new ArrayList<String>();
+            for(BaseComponent with : getWith()) {
+                withText.add(with.toString(visited));
+            }
+            fields.add("with=[" + Joiner.on(", ").join(withText) + "]");
+        }
+
+        super.toString(fields, visited);
     }
 }

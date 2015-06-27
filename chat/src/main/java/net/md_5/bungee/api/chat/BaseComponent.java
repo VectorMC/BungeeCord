@@ -1,5 +1,7 @@
 package net.md_5.bungee.api.chat;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableSet;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -7,11 +9,13 @@ import lombok.Setter;
 import net.md_5.bungee.api.ChatColor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+
 import lombok.ToString;
 
 @Setter
-@ToString(exclude = "parent")
 @NoArgsConstructor
 public abstract class BaseComponent
 {
@@ -387,5 +391,44 @@ public abstract class BaseComponent
                 e.toLegacyText( builder );
             }
         }
+    }
+
+    protected void toString(List<String> fields, Set<BaseComponent> visited) {
+        if(getColorRaw() != null) fields.add("color=" + getColorRaw());
+        if(isBoldRaw() != null) fields.add("bold=" + isBoldRaw());
+        if(isItalicRaw() != null) fields.add("italic=" + isItalicRaw());
+        if(isUnderlinedRaw() != null) fields.add("underlined=" + isUnderlinedRaw());
+        if(isStrikethroughRaw() != null) fields.add("strikethrough=" + isStrikethroughRaw());
+        if(isObfuscatedRaw() != null) fields.add("obfuscated=" + isObfuscatedRaw());
+
+        if(getClickEvent() != null) fields.add("clickEvent=" + getClickEvent());
+        if(getHoverEvent() != null) fields.add("hoverEvent=" + getHoverEvent());
+
+        if(getExtra() != null && !getExtra().isEmpty()) {
+            List<String> extraText = new ArrayList<String>();
+            for(BaseComponent extra : getExtra()) {
+                extraText.add(extra.toString(visited));
+            }
+            fields.add("extra=[" + Joiner.on(", ").join(extraText) + "]");
+        }
+    }
+
+    protected String toString(Set<BaseComponent> visited) {
+        String text = getClass().getSimpleName() +  "{";
+        if(visited.contains(this)) {
+            text += "...";
+        } else {
+            visited = ImmutableSet.<BaseComponent>builder().addAll(visited).add(this).build();
+            List<String> fields = new ArrayList<String>();
+            toString(fields, visited);
+            text += Joiner.on(", ").join(fields);
+        }
+
+        return text + "}";
+    }
+
+    @Override
+    public String toString() {
+        return toString(Collections.<BaseComponent>emptySet());
     }
 }
