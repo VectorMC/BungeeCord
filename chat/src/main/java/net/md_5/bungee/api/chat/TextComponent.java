@@ -180,31 +180,33 @@ public class TextComponent extends BaseComponent
     }
 
     @Override
-    protected void toLegacyText(StringBuilder builder)
+    protected void toLegacyText(StringBuilder builder, Formatting format)
     {
-        builder.append( getColor() );
-        if ( isBold() )
+        format = Formatting.inherit(format, this);
+
+        builder.append( getColor(format) );
+        if ( isBold(format) )
         {
             builder.append( ChatColor.BOLD );
         }
-        if ( isItalic() )
+        if ( isItalic(format) )
         {
             builder.append( ChatColor.ITALIC );
         }
-        if ( isUnderlined() )
+        if ( isUnderlined(format) )
         {
             builder.append( ChatColor.UNDERLINE );
         }
-        if ( isStrikethrough() )
+        if ( isStrikethrough(format) )
         {
             builder.append( ChatColor.STRIKETHROUGH );
         }
-        if ( isObfuscated() )
+        if ( isObfuscated(format) )
         {
             builder.append( ChatColor.MAGIC );
         }
         builder.append( text );
-        super.toLegacyText( builder );
+        super.toLegacyText( builder, format );
     }
 
     @Override
