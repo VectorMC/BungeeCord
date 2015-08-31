@@ -23,7 +23,6 @@ public class BungeeLogger extends Logger
     public BungeeLogger(BungeeCord bungee)
     {
         super( "BungeeCord", null );
-        setLevel( Level.ALL );
 
         try
         {
