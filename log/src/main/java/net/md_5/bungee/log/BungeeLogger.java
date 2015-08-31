@@ -23,7 +23,6 @@ public class BungeeLogger extends Logger
     public BungeeLogger(String loggerName, String filePattern, ConsoleReader reader)
     {
         super( loggerName, null );
-        setLevel( Level.ALL );
 
         try
         {
