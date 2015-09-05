@@ -167,6 +167,8 @@ public class PluginManager
                     tabResults.add( s );
                 }
             }
+        } catch ( CommandBypassException ex ) {
+            return false;
         } catch ( Exception ex )
         {
             sender.sendMessage( ChatColor.RED + "An internal error occurred whilst executing this command, please check the console log for details." );
