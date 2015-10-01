@@ -41,10 +41,12 @@ public class TranslatableComponent extends BaseComponent
     {
         super( original );
         setTranslate( original.getTranslate() );
+        List<BaseComponent> temp = new ArrayList<BaseComponent>();
         for ( BaseComponent baseComponent : original.getWith() )
         {
-            with.add( baseComponent.duplicate() );
+            temp.add( baseComponent.duplicate() );
         }
+        setWith( temp );
     }
 
     /**
