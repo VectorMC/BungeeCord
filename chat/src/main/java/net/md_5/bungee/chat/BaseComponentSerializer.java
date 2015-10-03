@@ -10,7 +10,6 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 
 import java.util.Arrays;
-import java.util.HashSet;
 
 public class BaseComponentSerializer
 {
@@ -78,16 +77,9 @@ public class BaseComponentSerializer
 
     protected void serialize(JsonObject object, BaseComponent component, JsonSerializationContext context)
     {
-        boolean first = false;
-        if ( ComponentSerializer.serializedComponents.get() == null )
-        {
-            first = true;
-            ComponentSerializer.serializedComponents.set( new HashSet<BaseComponent>() );
-        }
         try
         {
-            Preconditions.checkArgument( !ComponentSerializer.serializedComponents.get().contains( component ), "Component loop" );
-            ComponentSerializer.serializedComponents.get().add( component );
+            Preconditions.checkArgument( ComponentSerializer.serializedComponents.get().add( component ), "Component loop: " + component );
             if ( component.getColorRaw() != null )
             {
                 object.addProperty( "color", component.getColorRaw().getName() );
@@ -140,10 +132,6 @@ public class BaseComponentSerializer
         } finally
         {
             ComponentSerializer.serializedComponents.get().remove( component );
-            if ( first )
-            {
-                ComponentSerializer.serializedComponents.set( null );
-            }
         }
     }
 }
