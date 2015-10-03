@@ -10,11 +10,10 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import lombok.ToString;
+import org.apache.commons.lang.StringEscapeUtils;
 
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 public class TranslatableComponent extends BaseComponent
 {
@@ -245,5 +244,19 @@ public class TranslatableComponent extends BaseComponent
         {
             builder.append( ChatColor.MAGIC );
         }
+    }
+
+    @Override
+    protected void toStringTerminal(List<String> fields) {
+        fields.add("translate=\"" + StringEscapeUtils.escapeJava(getTranslate()) + "\"");
+        super.toStringTerminal(fields);
+    }
+
+    @Override
+    protected void toStringRecursive(List<String> fields) {
+        if(getWith() != null && !getWith().isEmpty()) {
+            fields.add("with=[" + JOINER.join(getWith()) + "]");
+        }
+        super.toStringRecursive(fields);
     }
 }
