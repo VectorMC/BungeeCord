@@ -5,9 +5,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.md_5.bungee.api.ChatColor;
+import org.apache.commons.lang.StringEscapeUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -218,9 +220,8 @@ public class TextComponent extends BaseComponent
         super.toLegacyText( builder );
     }
 
-    @Override
-    public String toString()
-    {
-        return String.format( "TextComponent{text=%s, %s}", text, super.toString() );
+    @Override protected void toStringTerminal(List<String> fields) {
+        fields.add("text=\"" + StringEscapeUtils.escapeJava(getText()) + "\"");
+        super.toStringTerminal(fields);
     }
 }

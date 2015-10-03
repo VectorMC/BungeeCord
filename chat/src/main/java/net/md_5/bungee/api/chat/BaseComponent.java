@@ -1,5 +1,6 @@
 package net.md_5.bungee.api.chat;
 
+import com.google.common.base.Joiner;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -7,11 +8,13 @@ import lombok.Setter;
 import net.md_5.bungee.api.ChatColor;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
-import lombok.ToString;
+import java.util.Map;
+import java.util.Set;
 
 @Setter
-@ToString(exclude = "parent")
 @NoArgsConstructor
 public abstract class BaseComponent
 {
@@ -406,5 +409,94 @@ public abstract class BaseComponent
                 e.toLegacyText( builder );
             }
         }
+    }
+
+    protected static final ChatColor[] DECORATIONS = {
+        ChatColor.BOLD,
+        ChatColor.ITALIC,
+        ChatColor.UNDERLINE,
+        ChatColor.STRIKETHROUGH,
+        ChatColor.MAGIC
+    };
+
+    protected static final Joiner JOINER = Joiner.on(", ");
+
+    public Boolean hasFormatRaw(ChatColor format) {
+        switch(format) {
+            case BOLD: return isBoldRaw();
+            case ITALIC: return isItalicRaw();
+            case UNDERLINE: return isUnderlinedRaw();
+            case STRIKETHROUGH: return isStrikethroughRaw();
+            case MAGIC: return isObfuscatedRaw();
+            case RESET: return null;
+        }
+
+        if(getColorRaw() == null) {
+            return null;
+        } else {
+            return getColorRaw() == format;
+        }
+    }
+
+    public Map<ChatColor, Boolean> getFormatsRaw() {
+        EnumMap<ChatColor, Boolean> formats = new EnumMap(ChatColor.class);
+
+        if(getColorRaw() != null) formats.put(getColorRaw(), true);
+
+        for(ChatColor format : DECORATIONS) {
+            final Boolean flag = hasFormatRaw(format);
+            if(flag != null) formats.put(format, flag);
+        }
+
+        return formats;
+    }
+
+    protected void toStringTerminal(List<String> fields) {
+        if(getColorRaw() != null) {
+            fields.add("color=\"" + getColorRaw().name().toLowerCase() + "\"");
+        }
+
+        for(ChatColor format : DECORATIONS) {
+            final Boolean flag = hasFormatRaw(format);
+            if(flag != null) {
+                fields.add(format.name().toLowerCase() + "=" + flag);
+            }
+        }
+
+        if(getClickEvent() != null) {
+            fields.add("clickEvent=" + getClickEvent());
+        }
+    }
+
+    protected void toStringRecursive(List<String> fields) {
+        if(getHoverEvent() != null) {
+            fields.add("hoverEvent=" + getHoverEvent());
+        }
+
+        if(getExtra() != null && !getExtra().isEmpty()) {
+            fields.add("extra=[" + Joiner.on(", ").join(getExtra()) + "]");
+        }
+    }
+
+    private static final ThreadLocal<Set<BaseComponent>> visited = new ThreadLocal<Set<BaseComponent>>() {
+        @Override protected Set<BaseComponent> initialValue() {
+            return new HashSet<BaseComponent>();
+        }
+    };
+
+    @Override
+    public String toString() {
+        List<String> fields = new ArrayList<String>();
+        toStringTerminal(fields);
+        try {
+            if(visited.get().add(this)) {
+                toStringRecursive(fields);
+            } else {
+                fields.add("... (cycle)");
+            }
+        } finally {
+            visited.get().remove(this);
+        }
+        return getClass().getSimpleName() + "{" + JOINER.join(fields) + "}";
     }
 }
