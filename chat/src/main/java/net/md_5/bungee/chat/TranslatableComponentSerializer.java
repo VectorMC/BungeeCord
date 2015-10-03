@@ -38,7 +38,13 @@ public class TranslatableComponentSerializer extends BaseComponentSerializer imp
         object.addProperty( "translate", src.getTranslate() );
         if ( src.getWith() != null )
         {
-            object.add( "with", context.serialize( src.getWith() ) );
+            try {
+                ComponentSerializer.serializedComponents.get().add( src );
+                object.add( "with", context.serialize( src.getWith() ) );
+            }
+            finally {
+                ComponentSerializer.serializedComponents.get().remove( src );
+            }
         }
         return object;
     }
