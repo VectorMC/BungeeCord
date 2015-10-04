@@ -105,6 +105,15 @@ public enum ChatColor
      */
     public static final char COLOR_CHAR = '\u00A7';
     public static final String ALL_CODES = "0123456789AaBbCcDdEeFfKkLlMmNnOoRr";
+
+    public static final ChatColor[] DECORATIONS = {
+        BOLD,
+        ITALIC,
+        UNDERLINE,
+        STRIKETHROUGH,
+        MAGIC
+    };
+
     /**
      * Pattern to remove all colour codes.
      */
