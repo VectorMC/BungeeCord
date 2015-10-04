@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatStringBuilder;
-import org.apache.commons.lang.StringEscapeUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -189,7 +188,7 @@ public class TextComponent extends BaseComponent
     }
 
     @Override protected void toStringTerminal(List<String> fields) {
-        fields.add("text=\"" + StringEscapeUtils.escapeJava(getText()) + "\"");
+        fields.add("text=\"" + getText() + "\"");
         super.toStringTerminal(fields);
     }
 }
