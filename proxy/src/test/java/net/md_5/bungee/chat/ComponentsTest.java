@@ -60,13 +60,13 @@ public class ComponentsTest
 
         Assert.assertEquals( "Given Golden Sword * 5 to thinkofdeath", translatableComponent.toPlainText() );
         Assert.assertEquals( ChatColor.WHITE + "Given " + ChatColor.AQUA + "Golden Sword" + ChatColor.WHITE
-                + " * " + ChatColor.WHITE + "5" + ChatColor.WHITE + " to " + ChatColor.WHITE + "thinkofdeath",
+                + " * 5 to thinkofdeath",
                 translatableComponent.toLegacyText() );
 
         TranslatableComponent positional = new TranslatableComponent( "book.pageIndicator", "5", "50" );
 
         Assert.assertEquals( "Page 5 of 50", positional.toPlainText() );
-        Assert.assertEquals( ChatColor.WHITE + "Page " + ChatColor.WHITE + "5" + ChatColor.WHITE + " of " + ChatColor.WHITE + "50", positional.toLegacyText() );
+        Assert.assertEquals( ChatColor.WHITE + "Page 5 of 50", positional.toLegacyText() );
     }
 
     @Test

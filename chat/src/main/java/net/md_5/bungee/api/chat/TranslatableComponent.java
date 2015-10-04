@@ -3,13 +3,17 @@ package net.md_5.bungee.api.chat;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.md_5.bungee.api.ChatColor;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.ChatStringBuilder;
 import org.apache.commons.lang.StringEscapeUtils;
 
 @Getter
@@ -98,10 +102,6 @@ public class TranslatableComponent extends BaseComponent
      */
     public void setWith(List<BaseComponent> components)
     {
-        for ( BaseComponent component : components )
-        {
-            component.parent = this;
-        }
         with = components;
     }
 
@@ -128,7 +128,6 @@ public class TranslatableComponent extends BaseComponent
         {
             with = new ArrayList<BaseComponent>();
         }
-        component.parent = this;
         with.add( component );
     }
 
@@ -178,7 +177,7 @@ public class TranslatableComponent extends BaseComponent
     }
 
     @Override
-    protected void toLegacyText(StringBuilder builder)
+    protected void toLegacyTextContent(ChatStringBuilder builder, ChatColor color, Set<ChatColor> decorations)
     {
         String trans;
         try
@@ -197,7 +196,7 @@ public class TranslatableComponent extends BaseComponent
             int pos = matcher.start();
             if ( pos != position )
             {
-                addFormat( builder );
+                builder.format( color, decorations );
                 builder.append( trans.substring( position, pos ) );
             }
             position = matcher.end();
@@ -208,44 +207,18 @@ public class TranslatableComponent extends BaseComponent
                 case 's':
                 case 'd':
                     String withIndex = matcher.group( 1 );
-                    with.get( withIndex != null ? Integer.parseInt( withIndex ) - 1 : i++ ).toLegacyText( builder );
+                    with.get( withIndex != null ? Integer.parseInt( withIndex ) - 1 : i++ ).toLegacyText( builder, color, decorations );
                     break;
                 case '%':
-                    addFormat( builder );
+                    builder.format( color, decorations );
                     builder.append( '%' );
                     break;
             }
         }
         if ( trans.length() != position )
         {
-            addFormat( builder );
+            builder.format( color, decorations );
             builder.append( trans.substring( position, trans.length() ) );
-        }
-        super.toLegacyText( builder );
-    }
-
-    private void addFormat(StringBuilder builder)
-    {
-        builder.append( getColor() );
-        if ( isBold() )
-        {
-            builder.append( ChatColor.BOLD );
-        }
-        if ( isItalic() )
-        {
-            builder.append( ChatColor.ITALIC );
-        }
-        if ( isUnderlined() )
-        {
-            builder.append( ChatColor.UNDERLINE );
-        }
-        if ( isStrikethrough() )
-        {
-            builder.append( ChatColor.STRIKETHROUGH );
-        }
-        if ( isObfuscated() )
-        {
-            builder.append( ChatColor.MAGIC );
         }
     }
 
