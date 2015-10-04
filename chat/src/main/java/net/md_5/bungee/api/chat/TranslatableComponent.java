@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatStringBuilder;
-import org.apache.commons.lang.StringEscapeUtils;
 
 @Getter
 @Setter
@@ -221,7 +220,7 @@ public class TranslatableComponent extends BaseComponent
 
     @Override
     protected void toStringTerminal(List<String> fields) {
-        fields.add("translate=\"" + StringEscapeUtils.escapeJava(getTranslate()) + "\"");
+        fields.add("translate=\"" + getTranslate() + "\"");
         super.toStringTerminal(fields);
     }
 
