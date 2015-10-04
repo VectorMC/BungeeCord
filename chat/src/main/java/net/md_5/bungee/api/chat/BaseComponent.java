@@ -1,14 +1,16 @@
 package net.md_5.bungee.api.chat;
 
 import com.google.common.base.Joiner;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.ChatStringBuilder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,9 +20,6 @@ import java.util.Set;
 @NoArgsConstructor
 public abstract class BaseComponent
 {
-
-    @Setter(AccessLevel.NONE)
-    BaseComponent parent;
 
     /**
      * The color of this component and any child components (unless overridden)
@@ -139,15 +138,7 @@ public abstract class BaseComponent
      */
     public ChatColor getColor()
     {
-        if ( color == null )
-        {
-            if ( parent == null )
-            {
-                return ChatColor.WHITE;
-            }
-            return parent.getColor();
-        }
-        return color;
+        return color != null ? color : ChatColor.WHITE;
     }
 
     /**
@@ -161,6 +152,10 @@ public abstract class BaseComponent
         return color;
     }
 
+    public ChatColor getColor(ChatColor def) {
+        return color != null ? color : def;
+    }
+
     /**
      * Returns whether this component is bold. This uses the parent's setting if
      * this component hasn't been set. false is returned if none of the parent
@@ -170,11 +165,7 @@ public abstract class BaseComponent
      */
     public boolean isBold()
     {
-        if ( bold == null )
-        {
-            return parent != null && parent.isBold();
-        }
-        return bold;
+        return bold != null && bold;
     }
 
     /**
@@ -197,11 +188,7 @@ public abstract class BaseComponent
      */
     public boolean isItalic()
     {
-        if ( italic == null )
-        {
-            return parent != null && parent.isItalic();
-        }
-        return italic;
+        return italic != null && italic;
     }
 
     /**
@@ -224,11 +211,7 @@ public abstract class BaseComponent
      */
     public boolean isUnderlined()
     {
-        if ( underlined == null )
-        {
-            return parent != null && parent.isUnderlined();
-        }
-        return underlined;
+        return underlined != null && underlined;
     }
 
     /**
@@ -251,11 +234,7 @@ public abstract class BaseComponent
      */
     public boolean isStrikethrough()
     {
-        if ( strikethrough == null )
-        {
-            return parent != null && parent.isStrikethrough();
-        }
-        return strikethrough;
+        return strikethrough != null && strikethrough;
     }
 
     /**
@@ -278,11 +257,7 @@ public abstract class BaseComponent
      */
     public boolean isObfuscated()
     {
-        if ( obfuscated == null )
-        {
-            return parent != null && parent.isObfuscated();
-        }
-        return obfuscated;
+        return obfuscated != null && obfuscated;
     }
 
     /**
@@ -298,10 +273,6 @@ public abstract class BaseComponent
 
     public void setExtra(List<BaseComponent> components)
     {
-        for ( BaseComponent component : components )
-        {
-            component.parent = this;
-        }
         extra = components;
     }
 
@@ -328,7 +299,6 @@ public abstract class BaseComponent
         {
             extra = new ArrayList<BaseComponent>();
         }
-        component.parent = this;
         extra.add( component );
     }
 
@@ -376,60 +346,107 @@ public abstract class BaseComponent
      */
     public String toLegacyText()
     {
-        StringBuilder builder = new StringBuilder();
-        toLegacyText( builder );
+        ChatStringBuilder builder = new ChatStringBuilder();
+        toLegacyText(builder, ChatColor.WHITE, Collections.<ChatColor>emptySet());
         return builder.toString();
     }
 
-    void toLegacyText(StringBuilder builder)
+    protected void toLegacyText(ChatStringBuilder builder, ChatColor color, Set<ChatColor> decorations)
     {
+        color = getColor(color);
+        decorations = getDecorations(decorations);
+
+        toLegacyTextContent(builder, color, decorations);
+
         if ( extra != null )
         {
             for ( BaseComponent e : extra )
             {
-                e.toLegacyText( builder );
+                e.toLegacyText( builder, color, decorations );
             }
         }
     }
 
-    protected static final ChatColor[] DECORATIONS = {
-        ChatColor.BOLD,
-        ChatColor.ITALIC,
-        ChatColor.UNDERLINE,
-        ChatColor.STRIKETHROUGH,
-        ChatColor.MAGIC
-    };
+    protected void toLegacyTextContent(ChatStringBuilder builder, ChatColor color, Set<ChatColor> decorations) {
+    }
 
     protected static final Joiner JOINER = Joiner.on(", ");
 
-    public Boolean hasFormatRaw(ChatColor format) {
-        switch(format) {
+    public Boolean getDecoration(ChatColor decoration) {
+        switch(decoration) {
             case BOLD: return isBoldRaw();
             case ITALIC: return isItalicRaw();
             case UNDERLINE: return isUnderlinedRaw();
             case STRIKETHROUGH: return isStrikethroughRaw();
             case MAGIC: return isObfuscatedRaw();
-            case RESET: return null;
-        }
-
-        if(getColorRaw() == null) {
-            return null;
-        } else {
-            return getColorRaw() == format;
+            default: return null;
         }
     }
 
-    public Map<ChatColor, Boolean> getFormatsRaw() {
-        EnumMap<ChatColor, Boolean> formats = new EnumMap(ChatColor.class);
-
-        if(getColorRaw() != null) formats.put(getColorRaw(), true);
-
-        for(ChatColor format : DECORATIONS) {
-            final Boolean flag = hasFormatRaw(format);
-            if(flag != null) formats.put(format, flag);
+    public boolean getDecoration(ChatColor decoration, boolean def) {
+        Boolean flag = getDecoration(decoration);
+        if(flag != null) {
+            return flag;
+        } else {
+            return def;
         }
+    }
 
-        return formats;
+    public void setDecoration(ChatColor decoration, Boolean flag) {
+        switch(decoration) {
+            case BOLD: setBold(flag); return;
+            case ITALIC: setItalic(flag); return;
+            case UNDERLINE: setUnderlined(flag); return;
+            case STRIKETHROUGH: setStrikethrough(flag); return;
+            case MAGIC: setObfuscated(flag); return;
+        }
+    }
+
+    public Map<ChatColor, Boolean> getDecorations() {
+        EnumMap<ChatColor, Boolean> decos = new EnumMap(ChatColor.class);
+        for(ChatColor deco : ChatColor.DECORATIONS) {
+            final Boolean flag = getDecoration(deco);
+            if(flag != null) decos.put(deco, flag);
+        }
+        return decos;
+    }
+
+    public Set<ChatColor> getDecorations(Set<ChatColor> def) {
+        EnumSet<ChatColor> decos = EnumSet.noneOf(ChatColor.class);
+        for(ChatColor deco : ChatColor.DECORATIONS) {
+            if(getDecoration(deco, def.contains(deco))) {
+                decos.add(deco);
+            }
+        }
+        return decos;
+    }
+
+    public void mergeDecorations(BaseComponent from) {
+        for(ChatColor deco : ChatColor.DECORATIONS) {
+            Boolean flag = from.getDecoration(deco);
+            if(flag != null) setDecoration(deco, flag);
+        }
+    }
+
+    public void mergeColor(BaseComponent from) {
+        if(from.getColorRaw() != null) {
+            setColor(from.getColorRaw());
+        }
+    }
+
+    public void mergeEvents(BaseComponent from) {
+        if(from.getClickEvent() != null) {
+            setClickEvent(from.getClickEvent());
+        }
+        if(from.getHoverEvent() != null) {
+            setHoverEvent(from.getHoverEvent());
+        }
+    }
+
+    public void mergeFormatting(BaseComponent from) {
+        mergeDecorations(from);
+        mergeColor(from);
+        mergeEvents(from);
     }
 
     protected void toStringTerminal(List<String> fields) {
@@ -437,8 +454,8 @@ public abstract class BaseComponent
             fields.add("color=\"" + getColorRaw().name().toLowerCase() + "\"");
         }
 
-        for(ChatColor format : DECORATIONS) {
-            final Boolean flag = hasFormatRaw(format);
+        for(ChatColor format : ChatColor.DECORATIONS) {
+            final Boolean flag = getDecoration(format);
             if(flag != null) {
                 fields.add(format.name().toLowerCase() + "=" + flag);
             }
