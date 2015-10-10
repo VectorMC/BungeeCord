@@ -85,7 +85,7 @@ public class Plugin
         this.proxy = proxy;
         this.description = description;
         this.file = description.getFile();
-        this.logger = new PluginLogger( this );
+        this.logger = PluginLogger.get( this );
     }
 
     //
