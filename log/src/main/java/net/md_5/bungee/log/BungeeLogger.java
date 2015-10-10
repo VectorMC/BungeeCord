@@ -31,7 +31,6 @@ public class BungeeLogger extends Logger
             addHandler( fileHandler );
 
             ColouredWriter consoleHandler = new ColouredWriter( reader );
-            consoleHandler.setLevel( Level.INFO );
             consoleHandler.setFormatter( formatter );
             addHandler( consoleHandler );
         } catch ( IOException ex )
