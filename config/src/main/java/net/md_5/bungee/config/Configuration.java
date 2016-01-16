@@ -28,6 +28,11 @@ public final class Configuration
         this( new LinkedHashMap<String, Object>(), defaults );
     }
 
+    public Configuration(Configuration values, Configuration defaults)
+    {
+        this( values.self, defaults );
+    }
+
     private Configuration getSectionFor(String path)
     {
         int index = path.indexOf( SEPARATOR );
