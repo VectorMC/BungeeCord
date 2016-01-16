@@ -25,6 +25,11 @@ public final class Configuration
         this( new LinkedHashMap<String, Object>(), defaults );
     }
 
+    public Configuration(Configuration values, Configuration defaults)
+    {
+        this( values.self, defaults );
+    }
+
     Configuration(Map<?, ?> map, Configuration defaults)
     {
         this.self = new LinkedHashMap<>();
