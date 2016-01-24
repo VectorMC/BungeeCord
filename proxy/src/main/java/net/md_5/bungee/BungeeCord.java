@@ -540,9 +540,15 @@ public class BungeeCord extends ProxyServer
     }
 
     @Override
+    public Map<String, ServerInfo> getServersCopy()
+    {
+        return config.getServersCopy();
+    }
+
+    @Override
     public ServerInfo getServerInfo(String name)
     {
-        return getServers().get( name );
+        return config.getServerInfo( name );
     }
 
     @Override
