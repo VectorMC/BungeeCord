@@ -3,10 +3,8 @@ package net.md_5.bungee.api.plugin;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.eventbus.Subscribe;
 import java.io.File;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
@@ -397,11 +395,6 @@ public class PluginManager
      */
     public void registerListener(Plugin plugin, Listener listener)
     {
-        for ( Method method : listener.getClass().getDeclaredMethods() )
-        {
-            Preconditions.checkArgument( !method.isAnnotationPresent( Subscribe.class ),
-                    "Listener %s has registered using deprecated subscribe annotation! Please update to @EventHandler.", listener );
-        }
         eventBus.register( listener );
         listenersByPlugin.put( plugin, listener );
     }
