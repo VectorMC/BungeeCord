@@ -31,7 +31,14 @@ public class MinecraftDecoder extends MessageToMessageDecoder<ByteBuf>
             if ( prot.hasPacket( packetId ) )
             {
                 packet = prot.createPacket( packetId );
-                packet.read( in, prot.getDirection(), protocolVersion );
+                try
+                {
+                    packet.read( in, prot.getDirection(), protocolVersion );
+                }
+                catch( IndexOutOfBoundsException e )
+                {
+                    throw new BadPacketException( "Unexpected end of packet " + packet.getClass(), e );
+                }
                 if ( in.readableBytes() != 0 )
                 {
                     throw new BadPacketException( "Did not read all bytes from packet " + packet.getClass() + " " + packetId + " Protocol " + protocol + " Direction " + prot );
