@@ -16,7 +16,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.scheduler.TaskScheduler;
 
-public abstract class ProxyServer
+public abstract class ProxyServer implements tc.oc.minecraft.api.server.LocalServer
 {
 
     @Getter
@@ -86,6 +86,18 @@ public abstract class ProxyServer
      * @return their player instance
      */
     public abstract ProxiedPlayer getPlayer(UUID uuid);
+
+    @Override
+    public ProxiedPlayer getPlayerExact(String name)
+    {
+        return getPlayer( name );
+    }
+
+    @Override
+    public Collection<ProxiedPlayer> getOnlinePlayers()
+    {
+        return getPlayers();
+    }
 
     /**
      * Return all servers registered to this proxy, keyed by name. Unlike the

@@ -37,7 +37,7 @@ import org.yaml.snakeyaml.introspector.PropertyUtils;
  * example event handling and plugin management.
  */
 @RequiredArgsConstructor
-public class PluginManager
+public class PluginManager implements tc.oc.minecraft.api.plugin.PluginManager
 {
 
     private static final Pattern argsSplit = Pattern.compile( " " );
@@ -183,6 +183,12 @@ public class PluginManager
     public Collection<Plugin> getPlugins()
     {
         return plugins.values();
+    }
+
+    @Override
+    public Collection<? extends Plugin> getAllPlugins()
+    {
+        return getPlugins();
     }
 
     /**
@@ -376,6 +382,24 @@ public class PluginManager
             } );
         }
         return event;
+    }
+
+    @Override
+    public void registerListener(tc.oc.minecraft.api.plugin.Plugin plugin, tc.oc.minecraft.api.event.Listener listener)
+    {
+        registerListener( (Plugin) plugin, (Listener) listener );
+    }
+
+    @Override
+    public void unregisterListener(tc.oc.minecraft.api.event.Listener listener)
+    {
+        unregisterListener( (Listener) listener );
+    }
+
+    @Override
+    public void unregisterListeners(tc.oc.minecraft.api.plugin.Plugin plugin)
+    {
+        unregisterListeners( (Plugin) plugin );
     }
 
     /**
