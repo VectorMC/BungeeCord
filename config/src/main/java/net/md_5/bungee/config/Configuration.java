@@ -7,12 +7,14 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.Getter;
 
-public final class Configuration
+public final class Configuration implements tc.oc.minecraft.api.configuration.Configuration
 {
 
     private static final char SEPARATOR = '.';
     final Map<String, Object> self;
+    @Getter
     private final Configuration defaults;
 
     public Configuration()

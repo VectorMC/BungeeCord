@@ -615,6 +615,11 @@ public class BungeeCord extends ProxyServer
     }
 
     @Override
+    public tc.oc.minecraft.api.command.ConsoleCommandSender getConsoleSender() {
+        return ConsoleCommandSender.getInstance();
+    }
+
+    @Override
     public CommandSender getConsole()
     {
         return ConsoleCommandSender.getInstance();
