@@ -20,6 +20,11 @@
     <dependencies>
         <dependency>
             <groupId>tc.oc</groupId>
+            <artifactId>minecraft-api</artifactId>
+            <version>1.8-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>tc.oc</groupId>
             <artifactId>bungeecord-chat</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
