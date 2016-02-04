@@ -19,6 +19,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>tc.oc</groupId>
+            <artifactId>minecraft-api</artifactId>
+            <version>1.11-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
             <version>1.14</version>
