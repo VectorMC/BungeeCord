@@ -591,6 +591,10 @@ public final class UserConnection implements ProxiedPlayer
     public ProxiedPlayer.MainHand getMainHand()
     {
         return ( settings == null || settings.getMainHand() == 1 ) ? ProxiedPlayer.MainHand.RIGHT : ProxiedPlayer.MainHand.LEFT;
+
+    public Locale getCurrentLocale()
+    {
+        return getLocale();
     }
 
     @Override
