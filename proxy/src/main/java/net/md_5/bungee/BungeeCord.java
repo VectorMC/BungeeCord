@@ -14,6 +14,7 @@ import net.md_5.bungee.api.Title;
 import net.md_5.bungee.api.chat.TranslatableComponent;
 import net.md_5.bungee.chat.TextComponentSerializer;
 import net.md_5.bungee.chat.TranslatableComponentSerializer;
+import net.md_5.bungee.command.ConsoleCommandSender;
 import net.md_5.bungee.module.ModuleManager;
 import com.google.common.io.ByteStreams;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -85,6 +86,7 @@ import net.md_5.bungee.protocol.packet.PluginMessage;
 import net.md_5.bungee.query.RemoteQuery;
 import net.md_5.bungee.util.CaseInsensitiveMap;
 import org.fusesource.jansi.AnsiConsole;
+import tc.oc.minecraft.api.command.*;
 
 /**
  * Main BungeeCord proxy class.
@@ -597,6 +599,12 @@ public class BungeeCord extends ProxyServer
     public ServerInfo constructServerInfo(String name, InetSocketAddress address, String motd, boolean restricted)
     {
         return new BungeeServerInfo( name, address, motd, restricted );
+    }
+
+    @Override
+    public tc.oc.minecraft.api.command.ConsoleCommandSender getConsoleSender()
+    {
+        return ConsoleCommandSender.getInstance();
     }
 
     @Override

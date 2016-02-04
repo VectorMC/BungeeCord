@@ -552,6 +552,12 @@ public final class UserConnection implements ProxiedPlayer
     }
 
     @Override
+    public Locale getCurrentLocale()
+    {
+        return getLocale();
+    }
+
+    @Override
     public boolean isForgeUser()
     {
         return forgeClientHandler.isForgeUser();
