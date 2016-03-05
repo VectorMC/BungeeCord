@@ -8,6 +8,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ScoreComponent;
+import net.md_5.bungee.api.chat.SelectorComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.TranslatableComponent;
 
@@ -21,6 +23,8 @@ public class ComponentSerializer implements JsonDeserializer<BaseComponent>
             registerTypeHierarchyAdapter( BaseComponent.class, new ComponentSerializer() ).
             registerTypeHierarchyAdapter( TextComponent.class, new TextComponentSerializer() ).
             registerTypeHierarchyAdapter( TranslatableComponent.class, new TranslatableComponentSerializer() ).
+            registerTypeHierarchyAdapter( SelectorComponent.class, new SelectorComponentSerializer() ).
+            registerTypeHierarchyAdapter( ScoreComponent.class, new ScoreComponentSerializer() ).
             create();
 
     public final static ThreadLocal<HashSet<BaseComponent>> serializedComponents = new ThreadLocal<HashSet<BaseComponent>>() {
@@ -67,6 +71,14 @@ public class ComponentSerializer implements JsonDeserializer<BaseComponent>
         if ( object.has( "translate" ) )
         {
             return context.deserialize( json, TranslatableComponent.class );
+        }
+        if ( object.has( "selector" ) )
+        {
+            return context.deserialize( json, SelectorComponent.class );
+        }
+        if ( object.has( "score" ) )
+        {
+            return context.deserialize( json, ScoreComponent.class );
         }
         return context.deserialize( json, TextComponent.class );
     }
