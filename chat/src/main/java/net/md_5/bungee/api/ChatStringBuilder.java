@@ -3,7 +3,7 @@ package net.md_5.bungee.api;
 import java.util.EnumSet;
 import java.util.Set;
 
-public class ChatStringBuilder {
+public class ChatStringBuilder implements Appendable {
 
     private final StringBuilder builder;
     private ChatColor oldColor, newColor;
@@ -63,11 +63,29 @@ public class ChatStringBuilder {
         }
     }
 
-    public void append(String text) {
-        if(!text.isEmpty()) {
+    @Override
+    public ChatStringBuilder append(CharSequence text) {
+        if(text.length() != 0) {
             refreshIfChanged();
             builder.append(text);
         }
+        return this;
+    }
+
+    @Override
+    public ChatStringBuilder append(CharSequence text, int start, int end) {
+        if(start < end) {
+            refreshIfChanged();
+            builder.append(text, start, end);
+        }
+        return this;
+    }
+
+    @Override
+    public Appendable append(char c) {
+        refreshIfChanged();
+        builder.append(c);
+        return this;
     }
 
     public void append(Object thing) {
