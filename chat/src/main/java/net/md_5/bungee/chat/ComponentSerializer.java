@@ -14,7 +14,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.TranslatableComponent;
 
 import java.lang.reflect.Type;
-import java.util.HashSet;
 
 public class ComponentSerializer implements JsonDeserializer<BaseComponent>
 {
@@ -26,12 +25,6 @@ public class ComponentSerializer implements JsonDeserializer<BaseComponent>
             registerTypeHierarchyAdapter( SelectorComponent.class, new SelectorComponentSerializer() ).
             registerTypeHierarchyAdapter( ScoreComponent.class, new ScoreComponentSerializer() ).
             create();
-
-    public final static ThreadLocal<HashSet<BaseComponent>> serializedComponents = new ThreadLocal<HashSet<BaseComponent>>() {
-        @Override protected HashSet<BaseComponent> initialValue() {
-            return new HashSet<BaseComponent>();
-        }
-    };
 
     public static BaseComponent[] parse(String json)
     {
