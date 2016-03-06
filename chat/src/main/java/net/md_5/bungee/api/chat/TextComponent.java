@@ -23,14 +23,22 @@ public class TextComponent extends BaseComponent
     private static final Pattern url = Pattern.compile( "^(?:(https?)://)?([-\\w_\\.]{2,}\\.[a-z]{2,4})(/\\S*)?$" );
 
     /**
+     * Calls {@link #fromLegacyText(String, boolean)} with autolink true
+     */
+    public static BaseComponent[] fromLegacyText(String message) {
+        return fromLegacyText(message, true);
+    }
+
+    /**
      * Converts the old formatting system that used
      * {@link net.md_5.bungee.api.ChatColor#COLOR_CHAR} into the new json based
      * system.
      *
      * @param message the text to convert
+     * @param autolink detect links and make them clickable
      * @return the components needed to print the message to the client
      */
-    public static BaseComponent[] fromLegacyText(String message)
+    public static BaseComponent[] fromLegacyText(String message, boolean autolink)
     {
         ArrayList<BaseComponent> components = new ArrayList<BaseComponent>();
         StringBuilder builder = new StringBuilder();
@@ -87,34 +95,38 @@ public class TextComponent extends BaseComponent
                 }
                 continue;
             }
-            int pos = message.indexOf( ' ', i );
-            if ( pos == -1 )
-            {
-                pos = message.length();
-            }
-            if ( matcher.region( i, pos ).find() )
-            { //Web link handling
 
-                if ( builder.length() > 0 )
+            if(autolink) {
+                int pos = message.indexOf( ' ', i );
+                if ( pos == -1 )
                 {
+                    pos = message.length();
+                }
+                if ( matcher.region( i, pos ).find() )
+                { //Web link handling
+
+                    if ( builder.length() > 0 )
+                    {
+                        TextComponent old = component;
+                        component = new TextComponent( old );
+                        old.setText( builder.toString() );
+                        builder = new StringBuilder();
+                        components.add( old );
+                    }
+
                     TextComponent old = component;
                     component = new TextComponent( old );
-                    old.setText( builder.toString() );
-                    builder = new StringBuilder();
-                    components.add( old );
+                    String urlString = message.substring( i, pos );
+                    component.setText( urlString );
+                    component.setClickEvent( new ClickEvent( ClickEvent.Action.OPEN_URL,
+                                                             urlString.startsWith( "http" ) ? urlString : "http://" + urlString ) );
+                    components.add( component );
+                    i += pos - i - 1;
+                    component = old;
+                    continue;
                 }
-
-                TextComponent old = component;
-                component = new TextComponent( old );
-                String urlString = message.substring( i, pos );
-                component.setText( urlString );
-                component.setClickEvent( new ClickEvent( ClickEvent.Action.OPEN_URL,
-                        urlString.startsWith( "http" ) ? urlString : "http://" + urlString ) );
-                components.add( component );
-                i += pos - i - 1;
-                component = old;
-                continue;
             }
+
             builder.append( c );
         }
         if ( builder.length() > 0 )
