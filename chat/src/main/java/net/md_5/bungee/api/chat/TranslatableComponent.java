@@ -1,10 +1,13 @@
 package net.md_5.bungee.api.chat;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -17,22 +20,22 @@ import net.md_5.bungee.api.ChatStringBuilder;
 
 @Getter
 @Setter
-@NoArgsConstructor
 public class TranslatableComponent extends BaseComponent
 {
 
-    private final ResourceBundle locales = ResourceBundle.getBundle( "mojang-translations/en_US" );
-    private final Pattern format = Pattern.compile( "%(?:(\\d+)\\$)?([A-Za-z%]|$)" );
+    private static final ResourceBundle locales = ResourceBundle.getBundle( "mojang-translations/en_US" );
+    private static final Pattern format = Pattern.compile( "%(?:(\\d+)\\$)?([A-Za-z%]|$)" );
 
     /**
      * The key into the Minecraft locale files to use for the translation. The
      * text depends on the client's locale setting. The console is always en_US
      */
-    private String translate;
+    @NonNull private String translate;
+
     /**
      * The components to substitute into the translation
      */
-    private List<BaseComponent> with;
+    private List<BaseComponent> with = EMPTY_COMPONENT_LIST;
 
     /**
      * Creates a translatable component from the original to clone it.
@@ -51,7 +54,7 @@ public class TranslatableComponent extends BaseComponent
             {
                 temp.add( baseComponent.duplicate() );
             }
-            setWith( temp );
+            setWithInternal( temp );
         }
     }
 
@@ -79,7 +82,7 @@ public class TranslatableComponent extends BaseComponent
                 temp.add( (BaseComponent) w );
             }
         }
-        setWith( temp );
+        setWithInternal( temp );
     }
 
     /**
@@ -101,7 +104,27 @@ public class TranslatableComponent extends BaseComponent
      */
     public void setWith(List<BaseComponent> components)
     {
-        with = components;
+        if(components == null) {
+            setWithInternal(null);
+        } else {
+            for(BaseComponent child : components) validateChild(child);
+            setWithInternal(new ArrayList<BaseComponent>(components));
+        }
+    }
+
+    /**
+     * Sets the translation substitutions to be used in this component. Removes
+     * any previously set substitutions
+     *
+     * @param components the components to substitute
+     */
+    public void setWith(BaseComponent... components)
+    {
+        setWith(components == null ? EMPTY_COMPONENT_LIST : Arrays.asList(components));
+    }
+
+    private void setWithInternal(List<BaseComponent> components) {
+        with = components == null || components.isEmpty() ? EMPTY_COMPONENT_LIST : components;
     }
 
     /**
@@ -123,7 +146,8 @@ public class TranslatableComponent extends BaseComponent
      */
     public void addWith(BaseComponent component)
     {
-        if ( with == null )
+        validateChild(component);
+        if ( with == EMPTY_COMPONENT_LIST )
         {
             with = new ArrayList<BaseComponent>();
         }
@@ -220,16 +244,38 @@ public class TranslatableComponent extends BaseComponent
     }
 
     @Override
-    protected void toStringTerminal(List<String> fields) {
-        fields.add("translate=\"" + getTranslate() + "\"");
-        super.toStringTerminal(fields);
+    public boolean contains(BaseComponent child) {
+        if(super.contains(child)) return true;
+        for(BaseComponent with : getWith()) {
+            if(with.contains(child)) return true;
+        }
+        return false;
     }
 
     @Override
-    protected void toStringRecursive(List<String> fields) {
+    protected void toStringFirst(List<String> fields) {
+        fields.add("translate=\"" + getTranslate() + "\"");
+        super.toStringFirst(fields);
+    }
+
+    @Override
+    protected void toStringLast(List<String> fields) {
         if(getWith() != null && !getWith().isEmpty()) {
             fields.add("with=[" + JOINER.join(getWith()) + "]");
         }
-        super.toStringRecursive(fields);
+        super.toStringLast(fields);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(super.hashCode(), translate, with);
+    }
+
+    @Override
+    protected boolean equals(BaseComponent that) {
+        return that instanceof TranslatableComponent &&
+               translate.equals(((TranslatableComponent) that).getTranslate()) &&
+               super.equals(that) &&
+               with.equals(((TranslatableComponent) that).getWith());
     }
 }
