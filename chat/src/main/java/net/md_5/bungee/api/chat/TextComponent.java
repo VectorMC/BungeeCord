@@ -1,14 +1,14 @@
 package net.md_5.bungee.api.chat;
 
+import com.google.common.base.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatStringBuilder;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -135,14 +135,13 @@ public class TextComponent extends BaseComponent
     /**
      * The text of the component that will be displayed to the client
      */
-    private String text;
+    @NonNull private String text;
 
     /**
-     * Creates a TextComponent with blank text.
+     * Creates a blank component
      */
-    public TextComponent()
-    {
-        this.text = "";
+    public TextComponent() {
+        this("");
     }
 
     /**
@@ -166,7 +165,7 @@ public class TextComponent extends BaseComponent
     public TextComponent(BaseComponent... extras)
     {
         setText( "" );
-        setExtra( new ArrayList<BaseComponent>( Arrays.asList( extras ) ) );
+        setExtra( extras );
     }
 
     /**
@@ -200,8 +199,20 @@ public class TextComponent extends BaseComponent
         builder.append( text );
     }
 
-    @Override protected void toStringTerminal(List<String> fields) {
+    @Override protected void toStringFirst(List<String> fields) {
         fields.add("text=\"" + getText() + "\"");
-        super.toStringTerminal(fields);
+        super.toStringFirst(fields);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(super.hashCode(), text);
+    }
+
+    @Override
+    protected boolean equals(BaseComponent that) {
+        return that instanceof TextComponent &&
+               text.equals(((TextComponent) that).getText()) &&
+               super.equals(that);
     }
 }
