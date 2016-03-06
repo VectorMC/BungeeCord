@@ -1,5 +1,6 @@
 package net.md_5.bungee.chat;
 
+import com.google.common.collect.ImmutableList;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -140,26 +141,49 @@ public class ComponentsTest
         Assert.assertEquals( eventRetention[1].getClickEvent(), testClickEvent );
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testLoopSimple()
     {
         TextComponent component = new TextComponent( "Testing" );
-        component.addExtra( component );
-        ComponentSerializer.toString( component );
+
+        try {
+            component.addExtra( component );
+            Assert.fail();
+        } catch(IllegalArgumentException ignored) {}
+
+        try {
+            component.setExtra( component );
+            Assert.fail();
+        } catch(IllegalArgumentException ignored) {}
+
+        try {
+            component.setExtra(ImmutableList.<BaseComponent>of(component));
+            Assert.fail();
+        } catch(IllegalArgumentException ignored) {}
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testLoopComplex()
     {
         TextComponent a = new TextComponent( "A" );
         TextComponent b = new TextComponent( "B" );
-        b.setColor( ChatColor.AQUA );
         TextComponent c = new TextComponent( "C" );
-        c.setColor( ChatColor.RED );
         a.addExtra( b );
         b.addExtra( c );
-        c.addExtra( a );
-        ComponentSerializer.toString( a );
+
+        try {
+            c.addExtra( a );
+            Assert.fail();
+        } catch(IllegalArgumentException ignored) {}
+    }
+
+    @Test
+    public void testLoopInTranslatable() {
+        TranslatableComponent c = new TranslatableComponent("hi");
+        try {
+            c.addWith(c);
+            Assert.fail();
+        } catch(IllegalArgumentException ignored) {}
     }
 
     @Test
@@ -169,21 +193,6 @@ public class ComponentsTest
         TextComponent b = new TextComponent( "B" );
         b.setColor( ChatColor.AQUA );
         a.addExtra( b );
-        a.addExtra( b );
-        ComponentSerializer.toString( a );
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testRepeatedError()
-    {
-        TextComponent a = new TextComponent( "A" );
-        TextComponent b = new TextComponent( "B" );
-        b.setColor( ChatColor.AQUA );
-        TextComponent c = new TextComponent( "C" );
-        c.setColor( ChatColor.RED );
-        a.addExtra( b );
-        a.addExtra( c );
-        c.addExtra( a );
         a.addExtra( b );
         ComponentSerializer.toString( a );
     }

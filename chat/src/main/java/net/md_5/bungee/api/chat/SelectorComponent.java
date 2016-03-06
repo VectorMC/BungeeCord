@@ -3,22 +3,18 @@ package net.md_5.bungee.api.chat;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.base.Objects;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NonNull;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatStringBuilder;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
+@Getter
+@AllArgsConstructor
 public class SelectorComponent extends BaseComponent {
 
-    private final String selector;
-
-    public SelectorComponent(String selector) {
-        this.selector = checkNotNull(selector);
-    }
-
-    public String getSelector() {
-        return selector;
-    }
+    @NonNull private final String selector;
 
     @Override
     public SelectorComponent duplicate() {
@@ -38,8 +34,20 @@ public class SelectorComponent extends BaseComponent {
     }
 
     @Override
-    protected void toStringTerminal(List<String> fields) {
+    protected void toStringFirst(List<String> fields) {
         fields.add("selector=\"" + getSelector() + '"');
-        super.toStringTerminal(fields);
+        super.toStringFirst(fields);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(super.hashCode(), selector);
+    }
+
+    @Override
+    protected boolean equals(BaseComponent that) {
+        return that instanceof SelectorComponent &&
+               selector.equals(((SelectorComponent) that).getSelector()) &&
+               super.equals(that);
     }
 }

@@ -1,6 +1,9 @@
 package net.md_5.bungee.api.chat;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +22,11 @@ import java.util.Set;
 @NoArgsConstructor
 public abstract class BaseComponent
 {
+    /**
+     * An immutable, empty component list. {@link BaseComponent#extra} is always set to this when empty.
+     * Subclasses can use this for their own fields as well.
+     */
+    protected static final List<BaseComponent> EMPTY_COMPONENT_LIST = Collections.emptyList();
 
     /**
      * The color of this component and any child components (unless overridden)
@@ -61,7 +68,7 @@ public abstract class BaseComponent
      * Appended components that inherit this component's formatting and events
      */
     @Getter
-    private List<BaseComponent> extra;
+    private List<BaseComponent> extra = EMPTY_COMPONENT_LIST;
 
     /**
      * The action to preform when this component (and child components) are
@@ -87,12 +94,9 @@ public abstract class BaseComponent
         setInsertion( old.getInsertion() );
         setClickEvent( old.getClickEvent() );
         setHoverEvent( old.getHoverEvent() );
-        if ( old.getExtra() != null )
+        for ( BaseComponent component : old.getExtra() )
         {
-            for ( BaseComponent component : old.getExtra() )
-            {
-                addExtra( component.duplicate() );
-            }
+            addValidExtra( component.duplicate() );
         }
     }
 
@@ -278,9 +282,30 @@ public abstract class BaseComponent
         return obfuscated;
     }
 
+    public void setHoverEvent(HoverEvent hoverEvent) {
+        if(hoverEvent != null) {
+            for(BaseComponent child : hoverEvent.getValue()) validateChild(child);
+        }
+        this.hoverEvent = hoverEvent;
+    }
+
     public void setExtra(List<BaseComponent> components)
     {
-        extra = components;
+        if(components == null || components.isEmpty()) {
+            extra = EMPTY_COMPONENT_LIST;
+        } else {
+            for(BaseComponent child : components) validateChild(child);
+            extra = new ArrayList<BaseComponent>(components);
+        }
+    }
+
+    public void setExtra(BaseComponent... components) {
+        if(components == null || components.length == 0) {
+            extra = EMPTY_COMPONENT_LIST;
+        } else {
+            for(BaseComponent child : components) validateChild(child);
+            extra = Lists.newArrayList(components);
+        }
     }
 
     /**
@@ -291,7 +316,7 @@ public abstract class BaseComponent
      */
     public void addExtra(String text)
     {
-        addExtra( new TextComponent( text ) );
+        addValidExtra( new TextComponent( text ) );
     }
 
     /**
@@ -299,10 +324,21 @@ public abstract class BaseComponent
      * component's formatting
      *
      * @param component the component to append
+     *                  @throws IllegalArgumentException if a component cycle is detected
      */
     public void addExtra(BaseComponent component)
     {
-        if ( extra == null )
+        validateChild( component );
+        addValidExtra(component);
+    }
+
+    /**
+     * Append a component without validating it. This method should only be called when
+     * it is certain not to create a component cycle i.e. when the given component is
+     * known not to contain this one.
+     */
+    private void addValidExtra(BaseComponent component) {
+        if (extra == EMPTY_COMPONENT_LIST)
         {
             extra = new ArrayList<BaseComponent>();
         }
@@ -456,7 +492,58 @@ public abstract class BaseComponent
         mergeEvents(from);
     }
 
-    protected void toStringTerminal(List<String> fields) {
+    /**
+     * Verify that the given component can become a part of this component
+     * by checking that they do not already have the inverse relationship.
+     *
+     * This method should be called BEFORE making the given component a child
+     * of this one, so that this component's state remains valid.
+     *
+     * @throws IllegalArgumentException if the given component contains this component
+     */
+    public void validateChild(BaseComponent child) {
+        Preconditions.checkNotNull(child);
+        if(child.contains(this)) {
+            throw new IllegalArgumentException("Component cycle detected between " + this + " and " + child);
+        }
+    }
+
+    /**
+     * Is the given component contained, in whole or in part, by this one?
+     *
+     * This method is used to detect containment cycles. Unlike with collections,
+     * equality is tested with == rather than {@link #equals(Object)}.
+     *
+     * Subclasses with recursive fields of their own should override this method
+     * to include those fields in the search.
+     *
+     * @return true if the given component is the same instance as this component,
+     *         or is a child of this component.
+     */
+    public boolean contains(BaseComponent child) {
+        if(this == child) return true;
+
+        for(BaseComponent extra : getExtra()) {
+            if(extra.contains(child)) return true;
+        }
+
+        if(getHoverEvent() != null) {
+            for(BaseComponent value : getHoverEvent().getValue()) {
+                if(value.contains(child)) return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Contribute leading fields to the output of {@link #toString()}.
+     *
+     * These fields should be relatively short i.e. not recursive. They will appear before
+     * any fields contributed by {@link #toStringLast(List)}, which can make the output
+     * easier to read.
+     */
+    protected void toStringFirst(List<String> fields) {
         if(getColorRaw() != null) {
             fields.add("color=\"" + getColorRaw().name().toLowerCase() + "\"");
         }
@@ -473,7 +560,12 @@ public abstract class BaseComponent
         }
     }
 
-    protected void toStringRecursive(List<String> fields) {
+    /**
+     * Contribute trailing fields to the output of {@link #toString()}.
+     *
+     * Particularly long fields, i.e. recursive ones, should be added here.
+     */
+    protected void toStringLast(List<String> fields) {
         if(getHoverEvent() != null) {
             fields.add("hoverEvent=" + getHoverEvent());
         }
@@ -483,25 +575,53 @@ public abstract class BaseComponent
         }
     }
 
-    private static final ThreadLocal<Set<BaseComponent>> visited = new ThreadLocal<Set<BaseComponent>>() {
-        @Override protected Set<BaseComponent> initialValue() {
-            return new HashSet<BaseComponent>();
-        }
-    };
+    /**
+     * Delegates to {@link #toStringFirst(List)} and {@link #toStringLast(List)}.
+     */
+    @Override
+    public final String toString() {
+        final List<String> fields = new ArrayList<String>();
+        toStringFirst(fields);
+        toStringLast(fields);
+        return getClass().getSimpleName() + "{" + JOINER.join(fields) + "}";
+    }
+
+    /**
+     * {@link #equals(Object)} delegates to this method when its argument is a {@link BaseComponent},
+     * and is not null or this.
+     *
+     * Overrides of this method must call the supermethod in order to compare the base properties.
+     * This should be done after performing any quick comparisons, and before any expensive ones,
+     * as the base method contains both.
+     */
+    protected boolean equals(BaseComponent that) {
+        return Objects.equal(this.color, that.color) &&
+               Objects.equal(this.bold, that.bold) &&
+               Objects.equal(this.italic, that.italic) &&
+               Objects.equal(this.underlined, that.underlined) &&
+               Objects.equal(this.strikethrough, that.strikethrough) &&
+               Objects.equal(this.obfuscated, that.obfuscated) &&
+               Objects.equal(this.insertion, that.insertion) &&
+               Objects.equal(this.clickEvent, that.clickEvent) &&
+               Objects.equal(this.hoverEvent, that.hoverEvent) &&
+               Objects.equal(this.extra, that.extra);
+    }
+
+    /**
+     * Delegates to {@link #equals(BaseComponent)}.
+     */
+    @Override
+    public final boolean equals(Object that) {
+        return that != null && (
+            that == this || (
+                that instanceof BaseComponent &&
+                equals((BaseComponent) that)
+            )
+        );
+    }
 
     @Override
-    public String toString() {
-        List<String> fields = new ArrayList<String>();
-        toStringTerminal(fields);
-        try {
-            if(visited.get().add(this)) {
-                toStringRecursive(fields);
-            } else {
-                fields.add("... (cycle)");
-            }
-        } finally {
-            visited.get().remove(this);
-        }
-        return getClass().getSimpleName() + "{" + JOINER.join(fields) + "}";
+    public int hashCode() {
+        return Objects.hashCode(color, bold, italic, underlined, strikethrough, obfuscated, insertion, clickEvent, hoverEvent, extra);
     }
 }
