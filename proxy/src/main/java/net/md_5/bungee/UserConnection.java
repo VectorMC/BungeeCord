@@ -634,4 +634,9 @@ public final class UserConnection implements ProxiedPlayer
     {
         return !ch.isClosed();
     }
+
+    @Override
+    public int getProtocolVersion() {
+        return getPendingConnection().getVersion();
+    }
 }
