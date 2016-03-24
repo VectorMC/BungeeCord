@@ -4,6 +4,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
@@ -728,5 +730,10 @@ public class BungeeCord extends ProxyServer
     public Title createTitle()
     {
         return new BungeeTitle();
+    }
+
+    @Override
+    public Set<Integer> getProtocolVersions() {
+        return ImmutableSet.copyOf(ProtocolConstants.SUPPORTED_VERSION_IDS);
     }
 }
