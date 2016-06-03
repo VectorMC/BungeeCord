@@ -107,6 +107,14 @@ public abstract class BaseComponent
      */
     public abstract BaseComponent duplicate();
 
+    public static String[] toLegacyArray(BaseComponent... components) {
+        final String[] legacies = new String[components.length];
+        for(int i = 0; i < components.length; i++) {
+            legacies[i] = components[i].toLegacyText();
+        }
+        return legacies;
+    }
+
     /**
      * Converts the components to a string that uses the old formatting codes
      * ({@link net.md_5.bungee.api.ChatColor#COLOR_CHAR}

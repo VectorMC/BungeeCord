@@ -22,6 +22,14 @@ public class TextComponent extends BaseComponent
 
     private static final Pattern url = Pattern.compile( "^(?:(https?)://)?([-\\w_\\.]{2,}\\.[a-z]{2,4})(/\\S*)?$" );
 
+    public static BaseComponent[] fromLegacyArray(String[] legacies, boolean autolink) {
+        final BaseComponent[] components = new BaseComponent[legacies.length];
+        for(int i = 0; i < legacies.length; i++) {
+            components[i] = fromLegacyToComponent(legacies[i], autolink);
+        }
+        return components;
+    }
+
     /**
      * Calls {@link #fromLegacyText(String, boolean)} with autolink true
      */
@@ -38,7 +46,7 @@ public class TextComponent extends BaseComponent
      * @param autolink detect links and make them clickable
      * @return the components needed to print the message to the client
      */
-    public static BaseComponent[] fromLegacyText(String message, boolean autolink)
+    public static List<BaseComponent> fromLegacyToList(String message, boolean autolink)
     {
         ArrayList<BaseComponent> components = new ArrayList<BaseComponent>();
         StringBuilder builder = new StringBuilder();
@@ -135,6 +143,12 @@ public class TextComponent extends BaseComponent
             components.add( component );
         }
 
+        return components;
+    }
+
+    public static BaseComponent[] fromLegacyText(String message, boolean autolink) {
+        final List<BaseComponent> components = fromLegacyToList(message, autolink);
+
         // The client will crash if the array is empty
         if ( components.isEmpty() )
         {
@@ -142,6 +156,15 @@ public class TextComponent extends BaseComponent
         }
 
         return components.toArray( new BaseComponent[ components.size() ] );
+    }
+
+    public static BaseComponent fromLegacyToComponent(String message, boolean autolink) {
+        final List<BaseComponent> components = fromLegacyToList(message, autolink);
+        switch(components.size()) {
+            case 0: return new TextComponent();
+            case 1: return components.get(0);
+            default: return new TextComponent(components);
+        }
     }
 
     /**
@@ -178,6 +201,15 @@ public class TextComponent extends BaseComponent
     {
         setText( "" );
         setExtra( extras );
+    }
+
+    public TextComponent(List<BaseComponent> extra) {
+        this("", extra);
+    }
+
+    public TextComponent(String text, List<BaseComponent> extra) {
+        setText(text);
+        setExtra(extra);
     }
 
     /**
