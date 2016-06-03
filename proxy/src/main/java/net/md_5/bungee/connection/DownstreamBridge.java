@@ -324,7 +324,15 @@ public class DownstreamBridge extends PacketHandler
                 if (server != null)
                     con.connect(server);
             }
-            if (subChannel.equals("ConnectOther"))
+            if ( subChannel.equals( "ConnectQuiet" ) )
+            {
+                ServerInfo server = bungee.getServerInfo( in.readUTF() );
+                if ( server != null )
+                {
+                    con.connect( server, null, false, true );
+                }
+            }
+            if ( subChannel.equals( "ConnectOther" ) )
             {
                 ProxiedPlayer player = bungee.getPlayer(in.readUTF());
                 if (player != null)
