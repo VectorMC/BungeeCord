@@ -248,7 +248,11 @@ public final class UserConnection implements ProxiedPlayer
         return next;
     }
 
-    public void connect(ServerInfo info, final Callback<Boolean> callback, final boolean retry)
+    public void connect(ServerInfo info, final Callback<Boolean> callback, final boolean retry) {
+        connect(info, callback, retry, false);
+    }
+
+    public void connect(ServerInfo info, final Callback<Boolean> callback, final boolean retry, final boolean quiet)
     {
         Preconditions.checkNotNull( info, "info" );
 
@@ -277,7 +281,9 @@ public final class UserConnection implements ProxiedPlayer
                 callback.done( false, null );
             }
 
-            sendMessage( bungee.getTranslation( "already_connected" ) );
+            if(!quiet) {
+                sendMessage( bungee.getTranslation( "already_connected" ) );
+            }
             return;
         }
         if ( pendingConnects.contains( target ) )
@@ -287,7 +293,9 @@ public final class UserConnection implements ProxiedPlayer
                 callback.done( false, null );
             }
 
-            sendMessage( bungee.getTranslation( "already_connecting" ) );
+            if(!quiet) {
+                sendMessage( bungee.getTranslation( "already_connecting" ) );
+            }
             return;
         }
 
@@ -323,13 +331,14 @@ public final class UserConnection implements ProxiedPlayer
                     ServerInfo def = updateAndGetNextServer( target );
                     if ( retry && def != null && ( getServer() == null || def != getServer().getInfo() ) )
                     {
-                        sendMessage( bungee.getTranslation( "fallback_lobby" ) );
+                        if(!quiet) {
+                            sendMessage( bungee.getTranslation( "fallback_lobby" ) );
+                        }
                         connect( def, null, true );
                     } else if ( dimensionChange )
                     {
                         disconnect( bungee.getTranslation( "fallback_kick", future.cause().getClass().getName() ) );
-                    } else
-                    {
+                    } else if(!quiet) {
                         sendMessage( bungee.getTranslation( "fallback_kick", future.cause().getClass().getName() ) );
                     }
                 }
