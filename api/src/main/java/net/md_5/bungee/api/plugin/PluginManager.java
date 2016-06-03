@@ -6,13 +6,13 @@ import com.google.common.collect.Multimap;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
-import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +49,7 @@ public class PluginManager implements tc.oc.minecraft.api.plugin.PluginManager
     private final Map<String, Plugin> plugins = new LinkedHashMap<>();
     private final Map<String, Command> commandMap = new HashMap<>();
     private Map<String, PluginDescription> toLoad = new HashMap<>();
+    private final Map<String, PluginClassloader> classLoaders = new HashMap<>();
     private final Multimap<Plugin, Command> commandsByPlugin = ArrayListMultimap.create();
     private final Multimap<Plugin, Listener> listenersByPlugin = ArrayListMultimap.create();
 
@@ -212,10 +213,11 @@ public class PluginManager implements tc.oc.minecraft.api.plugin.PluginManager
     public void loadPlugins()
     {
         Map<PluginDescription, Boolean> pluginStatuses = new HashMap<>();
+        Map<PluginDescription, PluginClassloader> pluginLoaders = new HashMap<>();
         for ( Map.Entry<String, PluginDescription> entry : toLoad.entrySet() )
         {
             PluginDescription plugin = entry.getValue();
-            if ( !enablePlugin( pluginStatuses, new Stack<PluginDescription>(), plugin ) )
+            if ( !enablePlugin( pluginStatuses, pluginLoaders, new Stack<PluginDescription>(), plugin ) )
             {
                 ProxyServer.getInstance().getLogger().log( Level.WARNING, "Failed to enable {0}", entry.getKey() );
             }
@@ -242,7 +244,7 @@ public class PluginManager implements tc.oc.minecraft.api.plugin.PluginManager
         }
     }
 
-    private boolean enablePlugin(Map<PluginDescription, Boolean> pluginStatuses, Stack<PluginDescription> dependStack, PluginDescription plugin)
+    private boolean enablePlugin(Map<PluginDescription, Boolean> pluginStatuses, Map<PluginDescription, PluginClassloader> pluginLoaders, Stack<PluginDescription> dependStack, PluginDescription plugin)
     {
         if ( pluginStatuses.containsKey( plugin ) )
         {
@@ -250,12 +252,13 @@ public class PluginManager implements tc.oc.minecraft.api.plugin.PluginManager
         }
 
         // combine all dependencies for 'for loop'
-        Set<String> dependencies = new HashSet<>();
+        Set<String> dependencies = new LinkedHashSet<>();
         dependencies.addAll( plugin.getDepends() );
         dependencies.addAll( plugin.getSoftDepends() );
 
         // success status
         boolean status = true;
+        final List<PluginClassloader> dependLoaders = new ArrayList<>();
 
         // try to load dependencies first
         for ( String dependName : dependencies )
@@ -278,9 +281,13 @@ public class PluginManager implements tc.oc.minecraft.api.plugin.PluginManager
                 } else
                 {
                     dependStack.push( plugin );
-                    dependStatus = this.enablePlugin( pluginStatuses, dependStack, depend );
+                    dependStatus = this.enablePlugin( pluginStatuses, pluginLoaders, dependStack, depend );
                     dependStack.pop();
                 }
+            }
+
+            if(Boolean.TRUE.equals(dependStatus)) {
+                dependLoaders.add(Preconditions.checkNotNull(pluginLoaders.get(depend)));
             }
 
             if ( dependStatus == Boolean.FALSE && plugin.getDepends().contains( dependName ) ) // only fail if this wasn't a soft dependency
@@ -303,10 +310,11 @@ public class PluginManager implements tc.oc.minecraft.api.plugin.PluginManager
         {
             try
             {
-                URLClassLoader loader = new PluginClassloader( new URL[]
+                PluginClassloader loader = new PluginClassloader(dependLoaders, new URL[]
                 {
                     plugin.getFile().toURI().toURL()
                 } );
+                pluginLoaders.put(plugin, loader);
                 Class<?> main = loader.loadClass( plugin.getMain() );
                 Plugin clazz = (Plugin) main.getDeclaredConstructor().newInstance();
 
