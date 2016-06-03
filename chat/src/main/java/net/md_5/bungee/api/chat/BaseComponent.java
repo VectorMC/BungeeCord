@@ -115,6 +115,14 @@ public abstract class BaseComponent
      */
     public abstract BaseComponent duplicate();
 
+    public static String[] toLegacyArray(BaseComponent... components) {
+        final String[] legacies = new String[components.length];
+        for(int i = 0; i < components.length; i++) {
+            legacies[i] = components[i].toLegacyText();
+        }
+        return legacies;
+    }
+
     /**
      * Clones the BaseComponent without formatting and returns the clone.
      *
