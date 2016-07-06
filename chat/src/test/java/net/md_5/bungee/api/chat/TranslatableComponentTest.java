@@ -13,6 +13,6 @@ public class TranslatableComponentTest
     {
         TranslatableComponent testComponent = new TranslatableComponent( "Test string with %s placeholders: %s", "2", "aoeu" );
         assertEquals( "Test string with 2 placeholders: aoeu", testComponent.toPlainText() );
-        assertEquals( "§fTest string with 2 placeholders: aoeu", testComponent.toLegacyText() );
+        assertEquals( "Test string with 2 placeholders: aoeu", testComponent.toLegacyText() );
     }
 }

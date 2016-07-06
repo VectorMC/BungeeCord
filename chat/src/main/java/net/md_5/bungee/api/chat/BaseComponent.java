@@ -3,6 +3,7 @@ package net.md_5.bungee.api.chat;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 @Setter
 @NoArgsConstructor
@@ -115,6 +117,10 @@ public abstract class BaseComponent
         return legacies;
     }
 
+    public static String toLegacyText(BaseComponent... components) {
+        return toLegacyText(null, ImmutableSet.<ChatColor>of(), components);
+    }
+
     /**
      * Converts the components to a string that uses the old formatting codes
      * ({@link net.md_5.bungee.api.ChatColor#COLOR_CHAR}
@@ -122,12 +128,12 @@ public abstract class BaseComponent
      * @param components the components to convert
      * @return the string in the old format
      */
-    public static String toLegacyText(BaseComponent... components)
+    public static String toLegacyText(@Nullable ChatColor color, Set<ChatColor> decorations, BaseComponent... components)
     {
         StringBuilder builder = new StringBuilder();
         for ( BaseComponent msg : components )
         {
-            builder.append( msg.toLegacyText() );
+            builder.append( msg.toLegacyText(color, decorations) );
         }
         return builder.toString();
     }
@@ -149,9 +155,8 @@ public abstract class BaseComponent
     }
 
     /**
-     * Returns the color of this component. This uses the parent's color if this
-     * component doesn't have one. {@link net.md_5.bungee.api.ChatColor#WHITE}
-     * is returned if no color is found.
+     * Returns the color of this component, or {@link net.md_5.bungee.api.ChatColor#WHITE}
+     * if this component has no color.
      *
      * @return the color of this component
      */
@@ -161,8 +166,7 @@ public abstract class BaseComponent
     }
 
     /**
-     * Returns the color of this component without checking the parents color.
-     * May return null
+     * Returns the color of this component, or null if this component has no color.
      *
      * @return the color of this component
      */
@@ -173,6 +177,11 @@ public abstract class BaseComponent
 
     public ChatColor getColor(ChatColor def) {
         return color != null ? color : def;
+    }
+
+    public void setColor(@Nullable ChatColor color) {
+        Preconditions.checkArgument(color == null || color.isColor(), "not a color");
+        this.color = color;
     }
 
     /**
@@ -390,19 +399,43 @@ public abstract class BaseComponent
     }
 
     /**
-     * Converts the component to a string that uses the old formatting codes
-     * ({@link net.md_5.bungee.api.ChatColor#COLOR_CHAR}
+     * Calls {@link #toLegacyText(ChatColor, Set)} with no default color or decorations.
+     */
+    public String toLegacyText() {
+        return toLegacyText(null, ImmutableSet.<ChatColor>of());
+    }
+
+    public String toLegacyText(@Nullable ChatColor color, ChatColor... decorations) {
+        return toLegacyText(color, ImmutableSet.copyOf(decorations));
+    }
+
+    /**
+     * Converts the component to a string that uses the old formatting codes {@link net.md_5.bungee.api.ChatColor#COLOR_CHAR}
+     *
+     * Any given default color or decorations will be applied as if they were inherited from a parent component.
+     * Any part of the string that is not formatted by some component in this tree will have the default formatting
+     * applied.
+     *
+     * If null is given as the default color, then no color is applied to the returned string other than from
+     * the components. This is only possible up to the first formatting applied by a component (because formatting
+     * cannot be "removed" in legacy text, only replaced). Any default-formatted text after that will be given
+     * the {@link ChatColor#RESET} format, which can also be the color passed to this method.
+     *
+     * @param color         Default color, or {@link ChatColor#RESET}, or null for no default
+     * @param decorations   Default decorations
      *
      * @return the string in the old format
      */
-    public String toLegacyText()
+    public String toLegacyText(@Nullable ChatColor color, Set<ChatColor> decorations)
     {
+        Preconditions.checkArgument(color == null || color.isColor(), "default color cannot be a decoration");
+
         ChatStringBuilder builder = new ChatStringBuilder();
-        toLegacyText(builder, ChatColor.WHITE, Collections.<ChatColor>emptySet());
+        toLegacyText(builder, color, decorations);
         return builder.toString();
     }
 
-    protected void toLegacyText(ChatStringBuilder builder, ChatColor color, Set<ChatColor> decorations)
+    protected void toLegacyText(ChatStringBuilder builder, @Nullable ChatColor color, Set<ChatColor> decorations)
     {
         color = getColor(color);
         decorations = getDecorations(decorations);
@@ -418,7 +451,7 @@ public abstract class BaseComponent
         }
     }
 
-    protected void toLegacyTextContent(ChatStringBuilder builder, ChatColor color, Set<ChatColor> decorations) {
+    protected void toLegacyTextContent(ChatStringBuilder builder, @Nullable ChatColor color, Set<ChatColor> decorations) {
     }
 
     protected static final Joiner JOINER = Joiner.on(", ");
