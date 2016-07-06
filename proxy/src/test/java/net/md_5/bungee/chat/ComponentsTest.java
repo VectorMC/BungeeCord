@@ -1,6 +1,7 @@
 package net.md_5.bungee.chat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -36,8 +37,8 @@ public class ComponentsTest
 
         Assert.assertEquals( "Text http://spigotmc.org google.com/test", BaseComponent.toPlainText( test2 ) );
         //The extra ChatColor.WHITEs are sometimes inserted when not needed but it doesn't change the result
-        Assert.assertEquals( ChatColor.WHITE + "Text " + ChatColor.WHITE + "http://spigotmc.org" + ChatColor.WHITE
-                + " " + ChatColor.GREEN + "google.com/test", BaseComponent.toLegacyText( test2 ) );
+        Assert.assertEquals( ChatColor.WHITE + "Text " + ChatColor.WHITE + "http://spigotmc.org" + ChatColor.WHITE + " " + ChatColor.GREEN + "google.com/test",
+                             BaseComponent.toLegacyText( ChatColor.WHITE, ImmutableSet.<ChatColor>of(), test2 ) );
 
         ClickEvent url1 = test2[1].getClickEvent();
         Assert.assertNotNull( url1 );
@@ -62,12 +63,12 @@ public class ComponentsTest
         Assert.assertEquals( "Given Golden Sword * 5 to thinkofdeath", translatableComponent.toPlainText() );
         Assert.assertEquals( ChatColor.WHITE + "Given " + ChatColor.AQUA + "Golden Sword" + ChatColor.WHITE
                 + " * 5 to thinkofdeath",
-                translatableComponent.toLegacyText() );
+                translatableComponent.toLegacyText(ChatColor.WHITE) );
 
         TranslatableComponent positional = new TranslatableComponent( "book.pageIndicator", "5", "50" );
 
         Assert.assertEquals( "Page 5 of 50", positional.toPlainText() );
-        Assert.assertEquals( ChatColor.WHITE + "Page 5 of 50", positional.toLegacyText() );
+        Assert.assertEquals( ChatColor.WHITE + "Page 5 of 50", positional.toLegacyText(ChatColor.WHITE) );
     }
 
     @Test

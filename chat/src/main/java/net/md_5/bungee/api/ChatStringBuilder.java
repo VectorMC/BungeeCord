@@ -2,15 +2,17 @@ package net.md_5.bungee.api;
 
 import java.util.EnumSet;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 public class ChatStringBuilder implements Appendable {
 
     private final StringBuilder builder;
-    private ChatColor oldColor, newColor;
+    private @Nullable ChatColor oldColor, newColor;
     private final Set<ChatColor> oldDecorations, newDecorations;
     private boolean formatChanged = true;
+    private boolean colored = false;
 
-    public ChatStringBuilder(String initial, ChatColor color, Set<ChatColor> decorations) {
+    public ChatStringBuilder(String initial, @Nullable ChatColor color, Set<ChatColor> decorations) {
         builder = initial != null ? new StringBuilder(initial) : new StringBuilder();
 
         oldColor = newColor = color;
@@ -20,7 +22,7 @@ public class ChatStringBuilder implements Appendable {
     }
 
     public ChatStringBuilder() {
-        this(null, ChatColor.RESET, null);
+        this(null, null, null);
     }
 
     @Override
@@ -29,6 +31,11 @@ public class ChatStringBuilder implements Appendable {
     }
 
     private void refreshComplete() {
+        if(newColor == null) {
+            newColor = ChatColor.RESET;
+        }
+
+        colored = true;
         builder.append(oldColor = newColor);
 
         oldDecorations.clear();
@@ -92,7 +99,12 @@ public class ChatStringBuilder implements Appendable {
         append(String.valueOf(thing));
     }
 
-    public void color(ChatColor color) {
+    public void color(@Nullable ChatColor color) {
+        if(colored && color == null) {
+            // Cannot un-color a legacy string
+            color = ChatColor.RESET;
+        }
+
         if(newColor != color) {
             formatChanged = true;
             newColor = color;
@@ -117,7 +129,7 @@ public class ChatStringBuilder implements Appendable {
         }
     }
 
-    public void format(ChatColor color, Set<ChatColor> decorations) {
+    public void format(@Nullable ChatColor color, Set<ChatColor> decorations) {
         color(color);
         decorations(decorations);
     }
