@@ -425,7 +425,7 @@ public class BungeeCord extends ProxyServer
 
                 // TODO: Fix this shit
                 getLogger().info( "Disabling plugins" );
-                for ( Plugin plugin : Lists.reverse( new ArrayList<>( pluginManager.getPlugins() ) ) )
+                for ( Plugin plugin : Lists.reverse( new ArrayList<>( pluginManager.getEnabledPlugins() ) ) )
                 {
                     try
                     {

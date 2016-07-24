@@ -145,4 +145,9 @@ public interface ProxyConfig
      * The favicon used for the server ping list.
      */
     Favicon getFaviconObject();
+
+    /**
+     * Shutdown immediately if any plugins fail to load
+     */
+    boolean isRequireAllPlugins();
 }
