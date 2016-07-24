@@ -61,7 +61,12 @@ public class BungeeCordLauncher
         BungeeCord bungee = new BungeeCord();
         ProxyServer.setInstance( bungee );
         bungee.getLogger().info( "Enabled BungeeCord version " + bungee.getVersion() );
-        bungee.start();
+        try {
+            bungee.start();
+        } catch(Exception e) {
+            bungee.stop("Internal error");
+            throw e;
+        }
 
         if ( !options.has( "noconsole" ) )
         {
