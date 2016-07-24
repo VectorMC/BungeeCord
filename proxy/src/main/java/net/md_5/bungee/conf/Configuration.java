@@ -62,6 +62,7 @@ public class Configuration implements ProxyConfig
     private String customServerName = "HexaCord";
     private boolean alwaysHandlePackets = false;
     private boolean preventProxyConnections;
+    private boolean requireAllPlugins;
 
     public void load()
     {
@@ -91,7 +92,8 @@ public class Configuration implements ProxyConfig
         compressionThreshold = adapter.getInt( "network_compression_threshold", compressionThreshold );
         customServerName = adapter.getString( "custom_server_name", "HexaCord" );
         alwaysHandlePackets = adapter.getBoolean( "always_handle_packets", false );
-        preventProxyConnections = adapter.getBoolean( "prevent_proxy_connections", preventProxyConnections );
+        preventProxyConnections = adapter.getBoolean( "prevent_proxy_connections", preventProxyConnections);
+        requireAllPlugins = adapter.getBoolean( "require_all_plugins", requireAllPlugins );
 
         disabledCommands = new CaseInsensitiveSet( (Collection<String>) adapter.getList( "disabled_commands", Arrays.asList( "disabledcommandhere" ) ) );
 

@@ -21,6 +21,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
+
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
@@ -49,6 +51,8 @@ public class PluginManager implements tc.oc.minecraft.api.plugin.PluginManager
     private final Map<String, Plugin> plugins = new LinkedHashMap<>();
     private final Map<String, Command> commandMap = new HashMap<>();
     private Map<String, PluginDescription> toLoad = new HashMap<>();
+    private final @Getter List<Plugin> loadedPlugins = new ArrayList<>();
+    private final @Getter List<Plugin> enabledPlugins = new ArrayList<>();
     private final Map<String, PluginClassloader> classLoaders = new HashMap<>();
     private final Multimap<Plugin, Command> commandsByPlugin = ArrayListMultimap.create();
     private final Multimap<Plugin, Listener> listenersByPlugin = ArrayListMultimap.create();
@@ -210,16 +214,16 @@ public class PluginManager implements tc.oc.minecraft.api.plugin.PluginManager
         return plugins.get( name );
     }
 
-    public void loadPlugins()
+    public void loadPlugins() throws Exception
     {
         Map<PluginDescription, Boolean> pluginStatuses = new HashMap<>();
         Map<PluginDescription, PluginClassloader> pluginLoaders = new HashMap<>();
         for ( Map.Entry<String, PluginDescription> entry : toLoad.entrySet() )
         {
             PluginDescription plugin = entry.getValue();
-            if ( !enablePlugin( pluginStatuses, pluginLoaders, new Stack<PluginDescription>(), plugin ) )
+            if ( !loadPlugin(pluginStatuses, pluginLoaders, new Stack<PluginDescription>(), plugin ) )
             {
-                ProxyServer.getInstance().getLogger().log( Level.WARNING, "Failed to enable {0}", entry.getKey() );
+                ProxyServer.getInstance().getLogger().log( Level.SEVERE, "Failed to load {0}", entry.getKey() );
             }
         }
         toLoad.clear();
@@ -228,23 +232,27 @@ public class PluginManager implements tc.oc.minecraft.api.plugin.PluginManager
 
     public void enablePlugins()
     {
-        for ( Plugin plugin : plugins.values() )
+        for ( Plugin plugin : loadedPlugins )
         {
             try
             {
                 plugin.onEnable();
+                enabledPlugins.add(plugin);
                 ProxyServer.getInstance().getLogger().log( Level.INFO, "Enabled plugin {0} version {1} by {2}", new Object[]
                 {
                     plugin.getDescription().getName(), plugin.getDescription().getVersion(), plugin.getDescription().getAuthor()
                 } );
             } catch ( Throwable t )
             {
-                ProxyServer.getInstance().getLogger().log( Level.WARNING, "Exception encountered when loading plugin: " + plugin.getDescription().getName(), t );
+                ProxyServer.getInstance().getLogger().log( Level.SEVERE, "Exception encountered when enabling plugin: " + plugin.getDescription().getName(), t );
+                if(proxy.getConfig().isRequireAllPlugins()) {
+                    throw t;
+                }
             }
         }
     }
 
-    private boolean enablePlugin(Map<PluginDescription, Boolean> pluginStatuses, Map<PluginDescription, PluginClassloader> pluginLoaders, Stack<PluginDescription> dependStack, PluginDescription plugin)
+    private boolean loadPlugin(Map<PluginDescription, Boolean> pluginStatuses, Map<PluginDescription, PluginClassloader> pluginLoaders, Stack<PluginDescription> dependStack, PluginDescription plugin) throws Exception
     {
         if ( pluginStatuses.containsKey( plugin ) )
         {
@@ -276,12 +284,12 @@ public class PluginManager implements tc.oc.minecraft.api.plugin.PluginManager
                         dependencyGraph.append( element.getName() ).append( " -> " );
                     }
                     dependencyGraph.append( plugin.getName() ).append( " -> " ).append( dependName );
-                    ProxyServer.getInstance().getLogger().log( Level.WARNING, "Circular dependency detected: {0}", dependencyGraph );
+                    ProxyServer.getInstance().getLogger().log( Level.SEVERE, "Circular dependency detected: {0}", dependencyGraph );
                     status = false;
                 } else
                 {
                     dependStack.push( plugin );
-                    dependStatus = this.enablePlugin( pluginStatuses, pluginLoaders, dependStack, depend );
+                    dependStatus = this.loadPlugin(pluginStatuses, pluginLoaders, dependStack, depend );
                     dependStack.pop();
                 }
             }
@@ -292,7 +300,7 @@ public class PluginManager implements tc.oc.minecraft.api.plugin.PluginManager
 
             if ( dependStatus == Boolean.FALSE && plugin.getDepends().contains( dependName ) ) // only fail if this wasn't a soft dependency
             {
-                ProxyServer.getInstance().getLogger().log( Level.WARNING, "{0} (required by {1}) is unavailable", new Object[]
+                ProxyServer.getInstance().getLogger().log( Level.SEVERE, "{0} (required by {1}) is unavailable", new Object[]
                 {
                     String.valueOf( dependName ), plugin.getName()
                 } );
@@ -321,14 +329,22 @@ public class PluginManager implements tc.oc.minecraft.api.plugin.PluginManager
                 clazz.init( proxy, plugin );
                 plugins.put( plugin.getName(), clazz );
                 clazz.onLoad();
+                loadedPlugins.add(clazz);
                 ProxyServer.getInstance().getLogger().log( Level.INFO, "Loaded plugin {0} version {1} by {2}", new Object[]
                 {
                     plugin.getName(), plugin.getVersion(), plugin.getAuthor()
                 } );
             } catch ( Throwable t )
             {
-                proxy.getLogger().log( Level.WARNING, "Error enabling plugin " + plugin.getName(), t );
+                proxy.getLogger().log( Level.SEVERE, "Error loading plugin " + plugin.getName(), t );
+                if(proxy.getConfig().isRequireAllPlugins()) {
+                    throw t;
+                }
             }
+        }
+
+        if(!status && proxy.getConfig().isRequireAllPlugins()) {
+            throw new IllegalStateException("Failed to load required plugin " + plugin.getName());
         }
 
         pluginStatuses.put( plugin, status );
