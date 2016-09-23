@@ -94,6 +94,7 @@ import net.md_5.bungee.query.RemoteQuery;
 import net.md_5.bungee.scheduler.BungeeScheduler;
 import net.md_5.bungee.util.CaseInsensitiveMap;
 import org.fusesource.jansi.AnsiConsole;
+import tc.oc.minecraft.api.plugin.PluginFinder;
 
 /**
  * Main BungeeCord proxy class.
@@ -735,5 +736,10 @@ public class BungeeCord extends ProxyServer
     @Override
     public Set<Integer> getProtocolVersions() {
         return ImmutableSet.copyOf(ProtocolConstants.SUPPORTED_VERSION_IDS);
+    }
+
+    @Override
+    public PluginFinder getPluginFinder() {
+        return pluginManager;
     }
 }
