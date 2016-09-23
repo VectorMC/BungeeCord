@@ -33,13 +33,14 @@ import net.md_5.bungee.event.EventHandler;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.introspector.PropertyUtils;
+import tc.oc.minecraft.api.plugin.PluginFinder;
 
 /**
  * Class to manage bridging between plugin duties and implementation duties, for
  * example event handling and plugin management.
  */
 @RequiredArgsConstructor
-public class PluginManager implements tc.oc.minecraft.api.plugin.PluginManager
+public class PluginManager implements PluginFinder, tc.oc.minecraft.api.event.EventBus
 {
 
     private static final Pattern argsSplit = Pattern.compile( " " );
