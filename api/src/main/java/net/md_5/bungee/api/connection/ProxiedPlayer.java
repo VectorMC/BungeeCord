@@ -268,4 +268,6 @@ public interface ProxiedPlayer extends Connection, CommandSender, tc.oc.minecraf
      * not occurred for this {@link ProxiedPlayer} yet.
      */
     Map<String, String> getModList();
+
+    Throwable getDisconnectException();
 }

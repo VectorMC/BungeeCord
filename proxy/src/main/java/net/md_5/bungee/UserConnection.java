@@ -150,6 +150,9 @@ public final class UserConnection implements ProxiedPlayer
         }
     };
 
+    @Getter
+    private Throwable disconnectException;
+
     public void init()
     {
         this.entityRewrite = EntityMap.getEntityMap( getPendingConnection().getVersion() );
@@ -350,6 +353,13 @@ public final class UserConnection implements ProxiedPlayer
             b.localAddress( getPendingConnection().getListener().getHost().getHostString(), 0 );
         }
         b.connect().addListener( listener );
+    }
+
+    public void disconnect(Throwable exception) {
+        if(disconnectException == null) {
+            disconnectException = exception;
+        }
+        disconnect(Util.exception(exception));
     }
 
     @Override
