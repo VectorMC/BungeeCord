@@ -66,12 +66,13 @@ public class DownstreamBridge extends PacketHandler
         ServerInfo def = con.updateAndGetNextServer( server.getInfo() );
         if ( def != null )
         {
-            server.setObsolete(true);
-            con.connectNow(def);
-            con.sendMessage(bungee.getTranslation("server_went_down"));
-        }
-        else
+            server.setObsolete( true );
+            con.connectNow( def );
+            con.sendMessage( bungee.getTranslation( "server_went_down" ) );
+        } else
+        {
             con.disconnect(Util.exception(t));
+        }
     }
     
     @Override
