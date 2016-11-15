@@ -13,6 +13,11 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import javax.crypto.SecretKey;
+import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.md_5.bungee.BungeeCord;
@@ -222,8 +227,24 @@ public class InitialHandler extends PacketHandler implements PendingConnection
                     @Override
                     public void done(ProxyPingEvent pingResult, Throwable error)
                     {
-                        Gson gson = BungeeCord.getInstance().gson;
-                        unsafe.sendPacket( new StatusResponse( gson.toJson( pingResult.getResponse() ) ) );
+                        Gson gson = handshake.getProtocolVersion() == ProtocolConstants.MINECRAFT_1_7_2 ? BungeeCord.getInstance().gsonLegacy : BungeeCord.getInstance().gson; // Travertine
+                        // Travertine start
+                        if ( ProtocolConstants.isBeforeOrEq( handshake.getProtocolVersion() , ProtocolConstants.MINECRAFT_1_8 ) )
+                        {
+                            // Minecraft < 1.9 doesn't send string server descriptions as chat components. Older 1.7
+                            // clients even crash when encountering a chat component instead of a string. To be on the
+                            // safe side, always send legacy descriptions for < 1.9 clients.
+                            JsonElement element = gson.toJsonTree(pingResult.getResponse());
+                            Preconditions.checkArgument(element.isJsonObject(), "Response is not a JSON object");
+                            JsonObject object = element.getAsJsonObject();
+                            object.addProperty("description", pingResult.getResponse().getDescription());
+
+                            unsafe.sendPacket(new StatusResponse(gson.toJson(element)));
+                        } else
+                        {
+                            unsafe.sendPacket( new StatusResponse( gson.toJson( pingResult.getResponse() ) ) );
+                        }
+                        // Travertine end
                     }
                 };
 
@@ -498,7 +519,15 @@ public class InitialHandler extends PacketHandler implements PendingConnection
                             userCon.setCompressionThreshold( BungeeCord.getInstance().config.getCompressionThreshold() );
                             userCon.init();
 
-                            unsafe.sendPacket( new LoginSuccess( getUniqueId().toString(), getName() ) ); // With dashes in between
+                            // Travertine start
+                            if ( ProtocolConstants.isAfterOrEq( getVersion() , ProtocolConstants.MINECRAFT_1_7_6 ) )
+                            {
+                                unsafe.sendPacket( new LoginSuccess( getUniqueId().toString(), getName() ) ); // With dashes in between
+                            } else
+                            {
+                                unsafe.sendPacket( new LoginSuccess( getUUID(), getName() ) ); // Without dashes, for older clients.
+                            }
+                            // Travertine end
                             ch.setProtocol( Protocol.GAME );
 
                             ch.getHandle().pipeline().get( HandlerBoss.class ).setHandler( new UpstreamBridge( bungee, userCon ) );

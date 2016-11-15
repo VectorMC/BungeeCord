@@ -321,6 +321,8 @@ public enum Protocol
         private final TIntObjectMap<List<Integer>> linkedProtocols = new TIntObjectHashMap<>();
         {
             linkedProtocols.put( ProtocolConstants.MINECRAFT_1_8, Arrays.asList(
+                    ProtocolConstants.MINECRAFT_1_7_2,
+                    ProtocolConstants.MINECRAFT_1_7_6,
                     ProtocolConstants.MINECRAFT_1_9,
                     ProtocolConstants.MINECRAFT_1_12
             ) );
@@ -370,7 +372,11 @@ public enum Protocol
                 return ( constructor == null ) ? null : constructor.newInstance();
             } catch ( ReflectiveOperationException ex )
             {
-                throw new BadPacketException( "Could not construct packet with id " + id, ex );
+                if ( ProtocolConstants.isBeforeOrEq( version, ProtocolConstants.MINECRAFT_1_7_6 ) ) {
+                    return null;
+                } else {
+                    throw new BadPacketException( "Packet with id " + id + " outside of range " );
+                }
             }
         }
 

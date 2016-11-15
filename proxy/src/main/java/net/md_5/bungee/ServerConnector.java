@@ -3,6 +3,7 @@ package net.md_5.bungee;
 import com.google.common.base.Preconditions;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import java.nio.charset.StandardCharsets;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
@@ -30,6 +31,7 @@ import net.md_5.bungee.netty.HandlerBoss;
 import net.md_5.bungee.netty.PacketHandler;
 import net.md_5.bungee.protocol.DefinedPacket;
 import net.md_5.bungee.protocol.Protocol;
+import net.md_5.bungee.protocol.ProtocolConstants;
 import net.md_5.bungee.protocol.packet.EncryptionRequest;
 import net.md_5.bungee.protocol.packet.Handshake;
 import net.md_5.bungee.protocol.packet.Kick;
@@ -199,10 +201,20 @@ public class ServerConnector extends PacketHandler
 
             user.unsafe().sendPacket( modLogin );
 
-            ByteBuf brand = ByteBufAllocator.DEFAULT.heapBuffer();
-            DefinedPacket.writeString( bungee.getName() + " (" + bungee.getVersion() + ")", brand );
-            user.unsafe().sendPacket( new PluginMessage( "MC|Brand", DefinedPacket.toArray( brand ), handshakeHandler.isServerForge() ) );
-            brand.release();
+            // Travertine start
+            String brandString = bungee.getName() + " (" + bungee.getVersion() + ")";
+
+            if ( ProtocolConstants.isBeforeOrEq( user.getPendingConnection().getVersion(), ProtocolConstants.MINECRAFT_1_7_6 ) )
+            {
+                user.unsafe().sendPacket( new PluginMessage( "MC|Brand", brandString.getBytes( StandardCharsets.UTF_8 ), handshakeHandler.isServerForge() ) );
+            } else
+            {
+                ByteBuf brand = ByteBufAllocator.DEFAULT.heapBuffer();
+                DefinedPacket.writeString(brandString, brand);
+                user.unsafe().sendPacket(new PluginMessage("MC|Brand", DefinedPacket.toArray( brand ), handshakeHandler.isServerForge()));
+                brand.release();
+            }
+            // Travertine end
 
             user.setDimension( login.getDimension() );
         } else
@@ -343,6 +355,14 @@ public class ServerConnector extends PacketHandler
         if ( pluginMessage.getTag().equals( ForgeConstants.FML_HANDSHAKE_TAG ) || pluginMessage.getTag().equals( ForgeConstants.FORGE_REGISTER ) )
         {
             this.handshakeHandler.handle( pluginMessage );
+
+            // Travertine start
+            if ( user.getForgeClientHandler().checkUserOutdated() )
+            {
+                ch.close();
+                user.getPendingConnects().remove(target);
+            }
+            // Travertine end
 
             // We send the message as part of the handler, so don't send it here.
             throw CancelSendSignal.INSTANCE;
