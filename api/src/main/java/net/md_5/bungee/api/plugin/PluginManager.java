@@ -2,6 +2,7 @@ package net.md_5.bungee.api.plugin;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import java.io.File;
 import java.io.InputStream;
@@ -19,13 +20,17 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
+import com.google.inject.Guice;
+import com.google.inject.Module;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.ProxyInstanceModule;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.event.EventBus;
@@ -40,7 +45,7 @@ import tc.oc.minecraft.api.plugin.PluginFinder;
  * example event handling and plugin management.
  */
 @RequiredArgsConstructor
-public class PluginManager implements PluginFinder, tc.oc.minecraft.api.event.EventBus
+public class PluginManager implements PluginFinder
 {
 
     private static final Pattern argsSplit = Pattern.compile( " " );
@@ -52,11 +57,12 @@ public class PluginManager implements PluginFinder, tc.oc.minecraft.api.event.Ev
     private final Map<String, Plugin> plugins = new LinkedHashMap<>();
     private final Map<String, Command> commandMap = new HashMap<>();
     private Map<String, PluginDescription> toLoad = new HashMap<>();
+    private final @Getter List<Plugin> instantiatedPlugins = new ArrayList<>();
     private final @Getter List<Plugin> loadedPlugins = new ArrayList<>();
     private final @Getter List<Plugin> enabledPlugins = new ArrayList<>();
     private final Map<String, PluginClassloader> classLoaders = new HashMap<>();
     private final Multimap<Plugin, Command> commandsByPlugin = ArrayListMultimap.create();
-    private final Multimap<Plugin, Listener> listenersByPlugin = ArrayListMultimap.create();
+    private final Multimap<Plugin, tc.oc.minecraft.api.event.Listener> listenersByPlugin = ArrayListMultimap.create();
 
     @SuppressWarnings("unchecked")
     public PluginManager(ProxyServer proxy)
@@ -229,14 +235,35 @@ public class PluginManager implements PluginFinder, tc.oc.minecraft.api.event.Ev
         }
         toLoad.clear();
         toLoad = null;
+
+        try {
+            Guice.createInjector(new ProxyInstanceModule(proxy, loadedPlugins));
+        } catch(RuntimeException ex) {
+            proxy.getLogger().log(Level.SEVERE, "Injector creation failed, server will shut down", ex);
+            throw ex;
+        }
+
+        for(Plugin plugin : loadedPlugins) {
+            try {
+                plugin.onLoad();
+            } catch(Throwable t) {
+                proxy.getLogger().log( Level.SEVERE, "Error loading plugin " + plugin.getDescription().getName(), t );
+                if(proxy.getConfig().isRequireAllPlugins()) {
+                    throw t;
+                }
+            }
+        }
     }
 
     public void enablePlugins()
     {
         for ( Plugin plugin : loadedPlugins )
         {
+            if(!plugin.isActive()) continue;
+
             try
             {
+                plugin.preEnable();
                 plugin.onEnable();
                 enabledPlugins.add(plugin);
                 ProxyServer.getInstance().getLogger().log( Level.INFO, "Enabled plugin {0} version {1} by {2}", new Object[]
@@ -250,6 +277,26 @@ public class PluginManager implements PluginFinder, tc.oc.minecraft.api.event.Ev
                     throw t;
                 }
             }
+        }
+    }
+
+    public void disablePlugins() {
+        proxy.getLogger().info( "Disabling plugins" );
+
+        for(Plugin plugin : Lists.reverse(new ArrayList<>(enabledPlugins))) {
+            if(!plugin.isActive()) continue;
+
+            try {
+                plugin.onDisable();
+                plugin.postDisable();
+                for(Handler handler : plugin.getLogger().getHandlers()) {
+                    handler.close();
+                }
+            } catch(Throwable t ) {
+                proxy.getLogger().log( Level.SEVERE, "Exception disabling plugin " + plugin.getDescription().getName(), t );
+            }
+            proxy.getScheduler().cancel( plugin );
+            plugin.getExecutorService().shutdownNow();
         }
     }
 
@@ -325,11 +372,19 @@ public class PluginManager implements PluginFinder, tc.oc.minecraft.api.event.Ev
                 } );
                 pluginLoaders.put(plugin, loader);
                 Class<?> main = loader.loadClass( plugin.getMain() );
-                Plugin clazz = (Plugin) main.getDeclaredConstructor().newInstance();
+                final Plugin clazz;
+                if(Plugin.class.isAssignableFrom(main)) {
+                    clazz = (Plugin) main.getDeclaredConstructor().newInstance();
+                } else if(Module.class.isAssignableFrom(main)) {
+                    clazz = new ModularPlugin((Module) main.newInstance());
+                } else {
+                    throw new IllegalStateException("main class `" + main.getName() +
+                                                    "' must extend either " + Plugin.class.getName() +
+                                                    " or " + Module.class.getName());
+                }
 
                 clazz.init( proxy, plugin );
                 plugins.put( plugin.getName(), clazz );
-                clazz.onLoad();
                 loadedPlugins.add(clazz);
                 ProxyServer.getInstance().getLogger().log( Level.INFO, "Loaded plugin {0} version {1} by {2}", new Object[]
                 {
@@ -337,7 +392,7 @@ public class PluginManager implements PluginFinder, tc.oc.minecraft.api.event.Ev
                 } );
             } catch ( Throwable t )
             {
-                proxy.getLogger().log( Level.SEVERE, "Error loading plugin " + plugin.getName(), t );
+                proxy.getLogger().log( Level.SEVERE, "Error instantiating plugin " + plugin.getName(), t );
                 if(proxy.getConfig().isRequireAllPlugins()) {
                     throw t;
                 }
@@ -419,24 +474,6 @@ public class PluginManager implements PluginFinder, tc.oc.minecraft.api.event.Ev
         return event;
     }
 
-    @Override
-    public void registerListener(tc.oc.minecraft.api.plugin.Plugin plugin, tc.oc.minecraft.api.event.Listener listener)
-    {
-        registerListener( (Plugin) plugin, (Listener) listener );
-    }
-
-    @Override
-    public void unregisterListener(tc.oc.minecraft.api.event.Listener listener)
-    {
-        unregisterListener( (Listener) listener );
-    }
-
-    @Override
-    public void unregisterListeners(tc.oc.minecraft.api.plugin.Plugin plugin)
-    {
-        unregisterListeners( (Plugin) plugin );
-    }
-
     /**
      * Register a {@link Listener} for receiving called events. Methods in this
      * Object which wish to receive events must be annotated with the
@@ -447,6 +484,10 @@ public class PluginManager implements PluginFinder, tc.oc.minecraft.api.event.Ev
      */
     public void registerListener(Plugin plugin, Listener listener)
     {
+        registerListener(plugin, (tc.oc.minecraft.api.event.Listener) listener);
+    }
+
+    public void registerListener(Plugin plugin, tc.oc.minecraft.api.event.Listener listener) {
         eventBus.register( listener );
         listenersByPlugin.put( plugin, listener );
     }
@@ -458,6 +499,10 @@ public class PluginManager implements PluginFinder, tc.oc.minecraft.api.event.Ev
      */
     public void unregisterListener(Listener listener)
     {
+        unregisterListener((tc.oc.minecraft.api.event.Listener) listener);
+    }
+
+    public void unregisterListener(tc.oc.minecraft.api.event.Listener listener) {
         eventBus.unregister( listener );
         listenersByPlugin.values().remove( listener );
     }
@@ -467,7 +512,7 @@ public class PluginManager implements PluginFinder, tc.oc.minecraft.api.event.Ev
      */
     public void unregisterListeners(Plugin plugin)
     {
-        for ( Iterator<Listener> it = listenersByPlugin.get( plugin ).iterator(); it.hasNext(); )
+        for (Iterator<tc.oc.minecraft.api.event.Listener> it = listenersByPlugin.get(plugin ).iterator(); it.hasNext(); )
         {
             eventBus.unregister( it.next() );
             it.remove();
