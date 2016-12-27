@@ -1,15 +1,22 @@
 package net.md_5.bungee.api.plugin;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.io.File;
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Provider;
+
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.inject.Injector;
 import lombok.Getter;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ConfigurationAdapter;
 import net.md_5.bungee.api.scheduler.GroupedThreadFactory;
+import tc.oc.minecraft.api.event.EventRegistry;
+import tc.oc.minecraft.api.event.ListenerContext;
+import tc.oc.exception.ExceptionHandler;
 
 /**
  * Represents any Plugin that may be loaded at runtime to enhance existing
@@ -26,6 +33,43 @@ public class Plugin implements tc.oc.minecraft.api.plugin.Plugin
     private File file;
     @Getter
     private Logger logger;
+
+    @Inject private Injector injector;
+    @Inject private ExceptionHandler exceptionHandler;
+    @Inject private EventRegistry eventRegistry;
+    @Inject private Provider<ListenerContext> listenerContext;
+
+    protected void assertInjected() {
+        if(injector == null) {
+            throw new IllegalStateException("Not available until plugin has been injected");
+        }
+    }
+
+    @Override
+    public Injector injector() {
+        assertInjected();
+        return injector;
+    }
+
+    @Override
+    public ExceptionHandler exceptionHandler() {
+        assertInjected();
+        return exceptionHandler;
+    }
+
+    @Override
+    public EventRegistry eventRegistry() {
+        assertInjected();
+        return eventRegistry;
+    }
+
+    public final void preEnable() {
+        listenerContext.get().enable();
+    }
+
+    public final void postDisable() {
+        listenerContext.get().disable();
+    }
 
     /**
      * Called when the plugin has just been loaded. Most of the proxy will not
