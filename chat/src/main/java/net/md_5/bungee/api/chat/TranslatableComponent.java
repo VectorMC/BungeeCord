@@ -76,11 +76,9 @@ public class TranslatableComponent extends BaseComponent
             List<BaseComponent> temp = new ArrayList<BaseComponent>();
             for ( Object w : with )
             {
-                if ( w instanceof String )
-                {
-                    temp.add( new TextComponent( (String) w ) );
-                } else
-                {
+                if(w instanceof BaseComponent) {
+                    temp.add((BaseComponent) w);
+                } else {
                     temp.add( (BaseComponent) w );
                 }
             }
