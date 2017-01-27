@@ -24,6 +24,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,6 +41,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Handler;
@@ -103,6 +106,7 @@ public class BungeeCord extends ProxyServer
      * Current operation state.
      */
     public volatile boolean isRunning;
+    private final AtomicBoolean isStopping = new AtomicBoolean(false);
     /**
      * Configuration.
      */
@@ -143,6 +147,7 @@ public class BungeeCord extends ProxyServer
     @Setter
     private ConfigurationAdapter configurationAdapter = new YamlConfig();
     private final Collection<String> pluginChannels = new HashSet<>();
+    private final Path rootFolder;
     @Getter
     private final File pluginsFolder = new File( "plugins" );
     @Getter
@@ -176,6 +181,8 @@ public class BungeeCord extends ProxyServer
 
         // Overcast - disable security manager
         // System.setSecurityManager( new BungeeSecurityManager() );
+
+        this.rootFolder = Paths.get(".").toAbsolutePath();
 
         try
         {
@@ -372,6 +379,11 @@ public class BungeeCord extends ProxyServer
     }
 
     @Override
+    public boolean isStopping() {
+        return isStopping.get();
+    }
+
+    @Override
     public void stop()
     {
         stop( getTranslation( "restart" ) );
@@ -380,6 +392,8 @@ public class BungeeCord extends ProxyServer
     @Override
     public void stop(final String reason)
     {
+        if(!isStopping.compareAndSet(false, true)) return;
+
         new Thread( "Shutdown Thread" )
         {
             @Override
@@ -473,6 +487,21 @@ public class BungeeCord extends ProxyServer
     public String getVersion()
     {
         return ( BungeeCord.class.getPackage().getImplementationVersion() == null ) ? "unknown" : BungeeCord.class.getPackage().getImplementationVersion();
+    }
+
+    @Override
+    public Path getRootPath() {
+        return rootFolder;
+    }
+
+    @Override
+    public InetSocketAddress getAddress() {
+        return getConfig().getListeners().iterator().next().getHost();
+    }
+
+    @Override
+    public int getMaxPlayers() {
+        return getConfig().getPlayerLimit();
     }
 
     @Override
