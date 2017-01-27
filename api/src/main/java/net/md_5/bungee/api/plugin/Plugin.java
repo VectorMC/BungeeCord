@@ -34,6 +34,8 @@ public class Plugin implements tc.oc.minecraft.api.plugin.Plugin
     @Getter
     private Logger logger;
 
+    private boolean enabled;
+
     @Inject private Injector injector;
     @Inject private ExceptionHandler exceptionHandler;
     @Inject private EventRegistry eventRegistry;
@@ -63,12 +65,22 @@ public class Plugin implements tc.oc.minecraft.api.plugin.Plugin
         return eventRegistry;
     }
 
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
     public final void preEnable() {
+        enabled = true;
         listenerContext.get().enable();
     }
 
     public final void postDisable() {
-        listenerContext.get().disable();
+        try {
+            listenerContext.get().disable();
+        } finally {
+            enabled = false;
+        }
     }
 
     /**
