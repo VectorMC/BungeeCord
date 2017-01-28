@@ -53,6 +53,8 @@ public class PluginDescription implements tc.oc.minecraft.api.plugin.PluginDescr
      */
     private String description = null;
 
+    private boolean isolate = true;
+
     @Override
     public List<String> getAuthors()
     {
@@ -69,5 +71,10 @@ public class PluginDescription implements tc.oc.minecraft.api.plugin.PluginDescr
     public List<String> getSoftDepend()
     {
         return ImmutableList.copyOf( getSoftDepends() );
+    }
+
+    @Override
+    public boolean isIsolated() {
+        return isolate;
     }
 }
