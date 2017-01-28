@@ -435,6 +435,7 @@ public class PluginManager implements PluginFinder
                         PluginDescription desc = yaml.loadAs( in, PluginDescription.class );
                         Preconditions.checkNotNull( desc.getName(), "Plugin from %s has no name", file );
                         Preconditions.checkNotNull( desc.getMain(), "Plugin from %s has no main", file );
+                        Preconditions.checkArgument( desc.isIsolated(), "isolate=false is not supported in " + file + "/plugin.yml" );
 
                         desc.setFile( file );
                         toLoad.put( desc.getName(), desc );
