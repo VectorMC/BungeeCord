@@ -24,6 +24,8 @@ public class PluginModule extends ProtectedModule {
         bind(ExceptionHandler.class).to(PluginExceptionHandler.class).in(Singleton.class);
         bind(EventRegistry.class).to(PluginEventRegistry.class).in(Singleton.class);
         bind(Scheduler.class).to(PluginScheduler.class).in(Singleton.class);
+
+        bind(PluginConfigurationLoader.class).in(Singleton.class);
     }
 
     @Provides
@@ -34,5 +36,10 @@ public class PluginModule extends ProtectedModule {
     @Provides
     PluginLogger logger(Plugin plugin) {
         return (PluginLogger) plugin.getLogger();
+    }
+
+    @Provides @Singleton
+    Configuration configuration(PluginConfigurationLoader loader) {
+        return loader.loadConfig();
     }
 }
