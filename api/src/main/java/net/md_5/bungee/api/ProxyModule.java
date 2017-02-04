@@ -12,11 +12,14 @@ import tc.oc.inject.SingletonModule;
 import tc.oc.minecraft.api.command.ConsoleCommandSender;
 import tc.oc.minecraft.api.plugin.PluginFinder;
 import tc.oc.minecraft.api.server.LocalServer;
+import tc.oc.minecraft.api.server.MinecraftServerModule;
 
 public class ProxyModule extends SingletonModule {
 
     @Override
     protected void configure() {
+        install(new MinecraftServerModule());
+
         bind(tc.oc.minecraft.api.server.Server.class).to(LocalServer.class);
         bind(LocalServer.class).to(ProxyServer.class);
         bind(PluginFinder.class).to(PluginManager.class);
