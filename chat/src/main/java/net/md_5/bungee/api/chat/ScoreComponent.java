@@ -22,6 +22,11 @@ public class ScoreComponent extends BaseComponent {
         return new ScoreComponent(getName(), getObjective());
     }
 
+    @Override
+    public BaseComponent duplicateWithoutFormatting() {
+        return duplicate();
+    }
+
     private String plainTextContent() {
         return getName() + ':' + getObjective();
     }

@@ -22,6 +22,11 @@ public class SelectorComponent extends BaseComponent {
     }
 
     @Override
+    public BaseComponent duplicateWithoutFormatting() {
+        return duplicate();
+    }
+
+    @Override
     void toPlainText(StringBuilder builder) {
         builder.append(selector);
         super.toPlainText(builder);

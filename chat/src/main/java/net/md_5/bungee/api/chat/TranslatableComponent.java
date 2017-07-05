@@ -78,8 +78,10 @@ public class TranslatableComponent extends BaseComponent
             {
                 if(w instanceof BaseComponent) {
                     temp.add((BaseComponent) w);
+                } else if (w instanceof String) {
+                    temp.add( TextComponent.fromLegacyToComponent((String) w, false) );
                 } else {
-                    temp.add( (BaseComponent) w );
+                    temp.add((BaseComponent)w);
                 }
             }
             setWith( temp );
