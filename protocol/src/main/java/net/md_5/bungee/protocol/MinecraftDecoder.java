@@ -32,7 +32,7 @@ public class MinecraftDecoder extends MessageToMessageDecoder<ByteBuf>
             {
                 try
                 {
-                    packet.read( in, prot.getDirection(), protocolVersion );
+                    packet.read0( in, prot.getDirection(), protocolVersion );
                 }
                 catch( IndexOutOfBoundsException e )
                 {
