@@ -1,6 +1,6 @@
 package net.md_5.bungee.protocol.packet;
 
-import net.md_5.bungee.protocol.DefinedPacket;
+import io.github.waterfallmc.travertine.protocol.MultiVersionPacketV17;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,7 +13,7 @@ import net.md_5.bungee.protocol.ProtocolConstants;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class Chat extends DefinedPacket
+public class Chat extends MultiVersionPacketV17
 {
 
     private String message;
@@ -24,6 +24,14 @@ public class Chat extends DefinedPacket
         this( message, (byte) 0 );
     }
 
+    // Travertine start
+    @Override
+    public void v17Read(ByteBuf buf, ProtocolConstants.Direction direction, int protocolVersion)
+    {
+        message = readString( buf );
+    }
+    // Travertine end
+
     @Override
     public void read(ByteBuf buf, ProtocolConstants.Direction direction, int protocolVersion)
     {
@@ -33,6 +41,14 @@ public class Chat extends DefinedPacket
             position = buf.readByte();
         }
     }
+
+    // Travertine start
+    @Override
+    public void v17Write(ByteBuf buf, ProtocolConstants.Direction direction, int protocolVersion)
+    {
+        writeString( message, buf );
+    }
+    // Travertine end
 
     @Override
     public void write(ByteBuf buf, ProtocolConstants.Direction direction, int protocolVersion)

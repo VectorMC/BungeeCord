@@ -1,5 +1,6 @@
 package net.md_5.bungee.protocol.packet;
 
+import io.github.waterfallmc.travertine.protocol.MultiVersionPacketV17;
 import net.md_5.bungee.protocol.DefinedPacket;
 import io.netty.buffer.ByteBuf;
 import lombok.Data;
@@ -13,11 +14,23 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class PlayerListItem extends DefinedPacket
+public class PlayerListItem extends MultiVersionPacketV17
 {
 
     private Action action;
     private Item[] items;
+
+    // Travertine start
+    @Override
+    public void v17Read(ByteBuf buf, ProtocolConstants.Direction direction, int protocolVersion)
+    {
+        items = new Item[ 1 ];
+        Item item = items[ 0 ] = new Item();
+        item.displayName = item.username = readString( buf );
+        action = !buf.readBoolean() ? Action.REMOVE_PLAYER : Action.ADD_PLAYER;
+        item.ping = buf.readShort();
+    }
+    // Travertine end
 
     @Override
     public void read(ByteBuf buf, ProtocolConstants.Direction direction, int protocolVersion)
@@ -72,6 +85,17 @@ public class PlayerListItem extends DefinedPacket
             }
         }
     }
+
+    // Travertine start
+    @Override
+    public void v17Write(ByteBuf buf, ProtocolConstants.Direction direction, int protocolVersion)
+    {
+        Item item = items[0]; // Only one at a time
+        writeString( item.displayName, buf ); // TODO: Server unique only!
+        buf.writeBoolean( action != Action.REMOVE_PLAYER );
+        buf.writeShort( item.ping );
+    }
+    // Travertine end
 
     @Override
     public void write(ByteBuf buf, ProtocolConstants.Direction direction, int protocolVersion)
