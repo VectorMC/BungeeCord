@@ -544,18 +544,13 @@ public class InitialHandler extends PacketHandler implements PendingConnection
     @Override
     public void disconnect(final BaseComponent... reason)
     {
-        ch.delayedClose( new Runnable()
+        if ( thisState != State.STATUS )
         {
-
-            @Override
-            public void run()
-            {
-                if ( thisState != State.STATUS )
-                {
-                    unsafe().sendPacket( new Kick( ComponentSerializer.toString( reason ) ) );
-                }
-            }
-        } );
+            ch.delayedClose( new Kick( ComponentSerializer.toString( reason ) ) );
+        } else
+        {
+            ch.close();
+        }
     }
 
     @Override
