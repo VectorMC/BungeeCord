@@ -434,6 +434,15 @@ public class BungeeCord extends ProxyServer
                 {
                 }
 
+                getLogger().info( "Closing IO threads" );
+                eventLoops.shutdownGracefully();
+                try
+                {
+                    eventLoops.awaitTermination( Long.MAX_VALUE, TimeUnit.NANOSECONDS );
+                } catch ( InterruptedException ex )
+                {
+                }
+
                 if ( reconnectHandler != null )
                 {
                     getLogger().info( "Saving reconnect locations" );
@@ -444,15 +453,6 @@ public class BungeeCord extends ProxyServer
                 metricsThread.cancel();
 
                 pluginManager.disablePlugins();
-
-                getLogger().info( "Closing IO threads" );
-                eventLoops.shutdownGracefully();
-                try
-                {
-                    eventLoops.awaitTermination( Long.MAX_VALUE, TimeUnit.NANOSECONDS );
-                } catch ( InterruptedException ex )
-                {
-                }
 
                 getLogger().info( "Thank you and goodbye" );
                 // Need to close loggers after last message!
