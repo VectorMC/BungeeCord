@@ -53,4 +53,8 @@ public class MinecraftOutput
     {
         buf.writeBytes( s.getBytes( Charset.forName( "UTF-8" ) ) );
     }
+
+    public void release() {
+        buf.release();
+    }
 }
