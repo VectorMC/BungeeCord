@@ -1,7 +1,6 @@
 package net.md_5.bungee;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
@@ -94,7 +93,7 @@ import net.md_5.bungee.query.RemoteQuery;
 import net.md_5.bungee.scheduler.BungeeScheduler;
 import net.md_5.bungee.util.CaseInsensitiveMap;
 import org.fusesource.jansi.AnsiConsole;
-import tc.oc.minecraft.api.plugin.PluginFinder;
+import net.avicus.minecraft.api.plugin.PluginFinder;
 
 /**
  * Main BungeeCord proxy class.
@@ -646,7 +645,7 @@ public class BungeeCord extends ProxyServer
     }
 
     @Override
-    public tc.oc.minecraft.api.command.ConsoleCommandSender getConsoleSender() {
+    public net.avicus.minecraft.api.command.ConsoleCommandSender getConsoleSender() {
         return ConsoleCommandSender.getInstance();
     }
 

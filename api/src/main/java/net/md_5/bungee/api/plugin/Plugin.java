@@ -14,15 +14,15 @@ import lombok.Getter;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ConfigurationAdapter;
 import net.md_5.bungee.api.scheduler.GroupedThreadFactory;
-import tc.oc.minecraft.api.event.EventRegistry;
-import tc.oc.minecraft.api.event.ListenerContext;
-import tc.oc.exception.ExceptionHandler;
+import net.avicus.minecraft.api.event.EventRegistry;
+import net.avicus.minecraft.api.event.ListenerContext;
+import net.avicus.exception.ExceptionHandler;
 
 /**
  * Represents any Plugin that may be loaded at runtime to enhance existing
  * functionality.
  */
-public class Plugin implements tc.oc.minecraft.api.plugin.Plugin
+public class Plugin implements net.avicus.minecraft.api.plugin.Plugin
 {
 
     @Getter

@@ -10,12 +10,13 @@ import net.md_5.bungee.api.SkinConfiguration;
 import net.md_5.bungee.api.Title;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.config.ServerInfo;
+import net.avicus.minecraft.api.entity.Player;
 
 /**
  * Represents a player who's connection is being connected to somewhere else,
  * whether it be a remote or embedded server.
  */
-public interface ProxiedPlayer extends Connection, CommandSender, tc.oc.minecraft.api.entity.Player
+public interface ProxiedPlayer extends Connection, CommandSender, Player
 {
 
     /**

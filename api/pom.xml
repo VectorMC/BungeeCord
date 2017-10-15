@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>tc.oc</groupId>
+        <groupId>net.avicus</groupId>
         <artifactId>bungeecord-parent</artifactId>
         <version>1.12-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -19,30 +19,30 @@
 
     <dependencies>
         <dependency>
-            <groupId>tc.oc</groupId>
+            <groupId>net.avicus</groupId>
             <artifactId>minecraft-api</artifactId>
-            <version>1.11-SNAPSHOT</version>
+            <version>1.12-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>tc.oc</groupId>
+            <groupId>net.avicus</groupId>
             <artifactId>bungeecord-chat</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>tc.oc</groupId>
+            <groupId>net.avicus</groupId>
             <artifactId>bungeecord-config</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>tc.oc</groupId>
+            <groupId>net.avicus</groupId>
             <artifactId>bungeecord-event</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>tc.oc</groupId>
+            <groupId>net.avicus</groupId>
             <artifactId>bungeecord-protocol</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>

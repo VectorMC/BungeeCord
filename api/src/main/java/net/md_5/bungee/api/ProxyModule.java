@@ -8,11 +8,12 @@ import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.PluginManager;
 import net.md_5.bungee.api.scheduler.TaskScheduler;
-import tc.oc.inject.SingletonModule;
-import tc.oc.minecraft.api.command.ConsoleCommandSender;
-import tc.oc.minecraft.api.plugin.PluginFinder;
-import tc.oc.minecraft.api.server.LocalServer;
-import tc.oc.minecraft.api.server.MinecraftServerModule;
+import net.avicus.minecraft.api.server.Server;
+import net.avicus.inject.SingletonModule;
+import net.avicus.minecraft.api.command.ConsoleCommandSender;
+import net.avicus.minecraft.api.plugin.PluginFinder;
+import net.avicus.minecraft.api.server.LocalServer;
+import net.avicus.minecraft.api.server.MinecraftServerModule;
 
 public class ProxyModule extends SingletonModule {
 
@@ -20,7 +21,7 @@ public class ProxyModule extends SingletonModule {
     protected void configure() {
         install(new MinecraftServerModule());
 
-        bind(tc.oc.minecraft.api.server.Server.class).to(LocalServer.class);
+        bind(Server.class).to(LocalServer.class);
         bind(LocalServer.class).to(ProxyServer.class);
         bind(PluginFinder.class).to(PluginManager.class);
     }

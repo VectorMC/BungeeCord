@@ -7,9 +7,9 @@ import javax.inject.Inject;
 
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.api.scheduler.TaskScheduler;
-import tc.oc.minecraft.api.scheduler.Scheduler;
-import tc.oc.minecraft.api.scheduler.Task;
-import tc.oc.minecraft.api.scheduler.Tickable;
+import net.avicus.minecraft.api.scheduler.Scheduler;
+import net.avicus.minecraft.api.scheduler.Task;
+import net.avicus.minecraft.api.scheduler.Tickable;
 
 public class PluginScheduler implements Scheduler {
 

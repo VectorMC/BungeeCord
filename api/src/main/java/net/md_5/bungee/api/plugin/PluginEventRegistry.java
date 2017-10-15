@@ -2,8 +2,8 @@ package net.md_5.bungee.api.plugin;
 
 import javax.inject.Inject;
 
-import tc.oc.minecraft.api.event.EventRegistry;
-import tc.oc.minecraft.api.event.Listener;
+import net.avicus.minecraft.api.event.EventRegistry;
+import net.avicus.minecraft.api.event.Listener;
 
 public class PluginEventRegistry implements EventRegistry {
 

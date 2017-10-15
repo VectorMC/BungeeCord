@@ -6,11 +6,12 @@ import net.md_5.bungee.api.Callback;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ServerPing;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.avicus.minecraft.api.server.Server;
 
 /**
  * Class used to represent a server to connect to.
  */
-public interface ServerInfo extends tc.oc.minecraft.api.server.Server
+public interface ServerInfo extends Server
 {
 
     /**

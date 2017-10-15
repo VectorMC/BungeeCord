@@ -9,10 +9,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.Getter;
-import tc.oc.minecraft.api.configuration.AbstractConfigurationSection;
-import tc.oc.minecraft.api.configuration.InvalidConfigurationException;
+import net.avicus.minecraft.api.configuration.AbstractConfigurationSection;
+import net.avicus.minecraft.api.configuration.InvalidConfigurationException;
 
-public final class Configuration extends AbstractConfigurationSection implements tc.oc.minecraft.api.configuration.Configuration
+public final class Configuration extends AbstractConfigurationSection implements net.avicus.minecraft.api.configuration.Configuration
 {
 
     private static final char SEPARATOR = '.';

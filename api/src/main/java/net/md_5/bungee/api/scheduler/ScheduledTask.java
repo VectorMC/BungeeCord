@@ -1,7 +1,7 @@
 package net.md_5.bungee.api.scheduler;
 
 import net.md_5.bungee.api.plugin.Plugin;
-import tc.oc.minecraft.api.scheduler.Task;
+import net.avicus.minecraft.api.scheduler.Task;
 
 /**
  * Represents a task scheduled for execution by the {@link TaskScheduler}.

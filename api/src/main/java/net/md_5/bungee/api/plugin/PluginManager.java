@@ -38,7 +38,7 @@ import net.md_5.bungee.event.EventHandler;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.introspector.PropertyUtils;
-import tc.oc.minecraft.api.plugin.PluginFinder;
+import net.avicus.minecraft.api.plugin.PluginFinder;
 
 /**
  * Class to manage bridging between plugin duties and implementation duties, for
@@ -62,7 +62,7 @@ public class PluginManager implements PluginFinder
     private final @Getter List<Plugin> enabledPlugins = new ArrayList<>();
     private final Map<String, PluginClassloader> classLoaders = new HashMap<>();
     private final Multimap<Plugin, Command> commandsByPlugin = ArrayListMultimap.create();
-    private final Multimap<Plugin, tc.oc.minecraft.api.event.Listener> listenersByPlugin = ArrayListMultimap.create();
+    private final Multimap<Plugin, net.avicus.minecraft.api.event.Listener> listenersByPlugin = ArrayListMultimap.create();
 
     @SuppressWarnings("unchecked")
     public PluginManager(ProxyServer proxy)
@@ -485,10 +485,10 @@ public class PluginManager implements PluginFinder
      */
     public void registerListener(Plugin plugin, Listener listener)
     {
-        registerListener(plugin, (tc.oc.minecraft.api.event.Listener) listener);
+        registerListener(plugin, (net.avicus.minecraft.api.event.Listener) listener);
     }
 
-    public void registerListener(Plugin plugin, tc.oc.minecraft.api.event.Listener listener) {
+    public void registerListener(Plugin plugin, net.avicus.minecraft.api.event.Listener listener) {
         eventBus.register( listener );
         listenersByPlugin.put( plugin, listener );
     }
@@ -500,10 +500,10 @@ public class PluginManager implements PluginFinder
      */
     public void unregisterListener(Listener listener)
     {
-        unregisterListener((tc.oc.minecraft.api.event.Listener) listener);
+        unregisterListener((net.avicus.minecraft.api.event.Listener) listener);
     }
 
-    public void unregisterListener(tc.oc.minecraft.api.event.Listener listener) {
+    public void unregisterListener(net.avicus.minecraft.api.event.Listener listener) {
         eventBus.unregister( listener );
         listenersByPlugin.values().remove( listener );
     }
@@ -513,7 +513,7 @@ public class PluginManager implements PluginFinder
      */
     public void unregisterListeners(Plugin plugin)
     {
-        for (Iterator<tc.oc.minecraft.api.event.Listener> it = listenersByPlugin.get(plugin ).iterator(); it.hasNext(); )
+        for (Iterator<net.avicus.minecraft.api.event.Listener> it = listenersByPlugin.get(plugin ).iterator(); it.hasNext(); )
         {
             eventBus.unregister( it.next() );
             it.remove();

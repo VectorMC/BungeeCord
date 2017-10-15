@@ -1,6 +1,6 @@
 package net.md_5.bungee.api.plugin;
 
-import tc.oc.inject.ProtectedModule;
+import net.avicus.inject.ProtectedModule;
 
 public class PluginInstanceModule extends ProtectedModule {
 

@@ -9,7 +9,7 @@
         <version>9</version>
     </parent>
 
-    <groupId>tc.oc</groupId>
+    <groupId>net.avicus</groupId>
     <artifactId>bungeecord-parent</artifactId>
     <version>1.12-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -39,16 +39,20 @@
             <id>pa-releases</id>
             <url>https://repo.extension.ws/content/repositories/releases</url>
         </repository>
+        <repository>
+            <id>avicus-public</id>
+            <url>https://repo.avicus.net/content/groups/public/</url>
+        </repository>
     </repositories>
 
     <distributionManagement>
         <repository>
-            <id>pa-deployment</id>
-            <url>https://repo.extension.ws/content/repositories/releases</url>
+            <id>avicus-repo</id>
+            <url>https://repo.avicus.net/content/repositories/releases-private/</url>
         </repository>
         <snapshotRepository>
-            <id>pa-deployment</id>
-            <url>https://repo.extension.ws/content/repositories/snapshots</url>
+            <id>avicus-repo</id>
+            <url>https://repo.avicus.net/content/repositories/snapshots-private/</url>
         </snapshotRepository>
     </distributionManagement>
 

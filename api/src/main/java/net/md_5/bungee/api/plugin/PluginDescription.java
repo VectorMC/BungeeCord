@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PluginDescription implements tc.oc.minecraft.api.plugin.PluginDescription
+public class PluginDescription implements net.avicus.minecraft.api.plugin.PluginDescription
 {
 
     /**

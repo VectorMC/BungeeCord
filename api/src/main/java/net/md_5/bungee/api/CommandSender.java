@@ -2,7 +2,7 @@ package net.md_5.bungee.api;
 
 import java.util.Collection;
 
-public interface CommandSender extends tc.oc.minecraft.api.command.CommandSender
+public interface CommandSender extends net.avicus.minecraft.api.command.CommandSender
 {
 
     /**

@@ -1,7 +1,7 @@
 package net.md_5.bungee.api.plugin;
 
 import com.google.inject.Module;
-import tc.oc.inject.ProtectedBinder;
+import net.avicus.inject.ProtectedBinder;
 
 class ModularPlugin extends Plugin {
 

@@ -4,8 +4,8 @@ import java.util.Collection;
 
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.plugin.PluginInstanceModule;
-import tc.oc.inject.KeyedModule;
-import tc.oc.inject.ProtectedBinder;
+import net.avicus.inject.KeyedModule;
+import net.avicus.inject.ProtectedBinder;
 
 public class ProxyInstanceModule extends KeyedModule {
 
